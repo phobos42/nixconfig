@@ -72,10 +72,9 @@
   #   hashedPassword = "$6$yrxZjj0o4Bt0//o5$hg1V.GckF/TgTqV4XenuI00DR6k1PlzKYHoUKsjl2CBTZepdAMNOz6xYEeMNP.I.xK0YlN6p.d6llhUgIeNig1";
   # };
   environment.systemPackages = with pkgs; [
-    # vim provided in common
     wget
-    # git provided in common
     powertop
+    gnumake
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
