@@ -15,7 +15,7 @@
     ];
   _module.args = {
     nixinate = {
-      host = "192.168.1.22";
+      host = "Kraken";
       sshUser = "box";
       buildOn = "remote";
       substituteOnTarget = true;
