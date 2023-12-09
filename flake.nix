@@ -39,7 +39,16 @@
             #home-manager.nixosModules.home-manager
           ];
           specialArgs = { inherit inputs; };
-        };        
+        };
+        BangBox = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            utils.nixosModules.autoGenFromInputs
+            ./hosts/BangBox/configuration.nix
+            #home-manager.nixosModules.home-manager
+          ];
+          specialArgs = { inherit inputs; };
+        };     
       };
     };
 }

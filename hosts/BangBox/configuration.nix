@@ -2,14 +2,28 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, lib, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
-  imports =
+  imports = with inputs.self.nixosModules; 
     [
-      # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      users-box
+      mixins-openssh
+      mixins-common
+      profiles-libvirtd
+      mixins-nm
     ];
+
+  _module.args = {
+    nixinate = {
+      host = "192.168.1.2";
+      sshUser = "box";
+      buildOn = "remote";
+      substituteOnTarget = true;
+      hermetic = false;
+    };
+  };
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -18,12 +32,16 @@
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
 
-  networking = {
+   networking = {
     hostName = "BangBox";
-    nameservers = [ "192.168.1.1" "192.168.1.100" "1.1.1.1" ];
-    defaultGateway.address = "192.168.1.1";
-    firewall = {
-      enable = false;
+    interfaces.enp0s20u1 = {
+      useDHCP = false;
+      ipv4.addresses = [
+        {
+          address = "192.168.1.102";
+          prefixLength = 24;
+        }
+      ];
     };
   };
 
@@ -42,34 +60,24 @@
     useXkbConfig = true; # use xkb.options in tty.
   };
 
-  users.mutableUsers = false;
-  users.users.box = {
-    hashedPassword = "$6$WoXeWZoFr4eGRHae$vnkZcDALT8FKCr.3/DmSuQyO.IC5X0sa79w50KfB0JoTHOvo2mf83kWZGRzBLMNAFd6x/aIRckfzriVoHsIU4/";
-    isNormalUser = true;
-    extraGroups = [
-      "wheel"
-      "networkmanager"
-    ]; # Enable ‘sudo’ for the user.
-    packages = with pkgs; [
-      tree
-    ];
-  };
+  # users.mutableUsers = false;
+  # users.users.box = {
+  #   hashedPassword = "$6$WoXeWZoFr4eGRHae$vnkZcDALT8FKCr.3/DmSuQyO.IC5X0sa79w50KfB0JoTHOvo2mf83kWZGRzBLMNAFd6x/aIRckfzriVoHsIU4/";
+  #   isNormalUser = true;
+  #   extraGroups = [
+  #     "wheel"
+  #     "networkmanager"
+  #   ]; # Enable ‘sudo’ for the user.
+  #   packages = with pkgs; [
+  #     tree
+  #   ];
+  # };
 
   environment.systemPackages = with pkgs; [
-    vim
     wget
-    git
     powertop
+    gnumake
   ];
-
-  services.openssh = {
-    enable = true;
-    settings = {
-      PasswordAuthentication = true;
-      PermitRootLogin = lib.mkForce "no";
-    };
-    openFirewall = lib.mkForce true;
-  };
 
   services.logind.extraConfig = ''
     	HandleLidSwitch=ignore
