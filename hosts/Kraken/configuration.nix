@@ -11,9 +11,11 @@
       users-box
       mixins-openssh
       mixins-common
-      profiles-libvirtd
       mixins-nm
+      mixins-tlp
+      profiles-libvirtd
     ];
+    
   _module.args = {
     nixinate = {
       host = "Kraken";

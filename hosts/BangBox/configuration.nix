@@ -11,13 +11,14 @@
       users-box
       mixins-openssh
       mixins-common
-      profiles-libvirtd
       mixins-nm
+      mixins-tlp
+      profiles-libvirtd
     ];
 
   _module.args = {
     nixinate = {
-      host = "192.168.1.2";
+      host = "BangBox";
       sshUser = "box";
       buildOn = "remote";
       substituteOnTarget = true;
