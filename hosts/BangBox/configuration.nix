@@ -14,6 +14,8 @@
       mixins-nm
       mixins-tlp
       profiles-libvirtd
+      profiles-docker
+      services-flame
     ];
 
   _module.args = {
