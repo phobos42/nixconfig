@@ -3,12 +3,15 @@
   imports = with inputs.self.nixosModules; 
     [
       ./hardware-configuration.nix
+      ./disks.nix
       users-box
       mixins-openssh
       mixins-common
       mixins-nm
       mixins-tlp
-      profiles-libvirtd
+      profiles-libvirtd 
+      profiles-zfs
+      services-nextcloud
     ];
 
   _module.args = {
@@ -52,6 +55,8 @@
     wget
     powertop
     gnumake
+    smartmontools
+    zfs
   ];
 
   # Copy the NixOS configuration file and link it from the resulting system
