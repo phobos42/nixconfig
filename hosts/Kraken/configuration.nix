@@ -9,6 +9,7 @@
       mixins-common
       mixins-nm
       mixins-tlp
+      profiles-docker
       profiles-libvirtd 
       profiles-zfs
       services-nextcloud
