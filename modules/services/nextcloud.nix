@@ -34,8 +34,8 @@
     enable = true;
     package = pkgs.nextcloud27;
     hostName = "nextcloud.kraken.box";
-    home = "/tank/shack/cloud/nextcloudconfig";
-    datadir = "/tank/shack/cloud/nextcloudstorage";
+    home = "/tank/shack/cloud/nextcloud/nextcloudconfig";
+    datadir = "/tank/shack/cloud/nextcloud/nextcloudstorage";
 
     # Auto-update Nextcloud Apps
     autoUpdateApps.enable = true;
@@ -51,9 +51,9 @@
       dbuser = "nextcloud";
       dbhost = "/run/postgresql"; # nextcloud will add /.s.PGSQL.5432 by itself
       dbname = "nextcloud";
-      dbpassFile = "/var/nextcloud-db-pass";
+      dbpassFile = "/tank/shack/cloud/nextcloud/nextcloud-db-pass";
 
-      adminpassFile = "/var/nextcloud-admin-pass";
+      adminpassFile = "/tank/shack/cloud/nextcloud/nextcloud-admin-pass";
       adminuser = "admin";
     };
   };
