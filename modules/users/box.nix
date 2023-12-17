@@ -1,4 +1,7 @@
 { config, pkgs, inputs, ... }:
+let
+  keys = inputs.self.nixosModules.values-sshkeys;
+in
 {
   nix.settings.trusted-users = [ "box" ];
   users.users.box = {
@@ -11,5 +14,6 @@
       tree
       magic-wormhole
     ];
+    openssh.authorizedKeys.keys = keys.box;
   };
 }
