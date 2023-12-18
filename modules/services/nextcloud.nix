@@ -1,31 +1,12 @@
 { pkgs, ... }:
 {
-  # security.acme = {
-  #   acceptTerms = true;
-  #   # Replace the email here!
-  #   defaults = {
-  #     email = "garrettruffner42@gmail.com";
-  #   };
-  # };
-
-  # networking.firewall.allowedTCPPorts = [ 80 443 ];
+  # Force nextcloud to listed on port 8080 internally for traefik to take port 80+443
   services.nginx = {
     enable = true;
-
-    # Use recommended settings
-    recommendedGzipSettings = true;
-    recommendedOptimisation = true;
-    recommendedProxySettings = true;
-    recommendedTlsSettings = true;
-    # Only allow PFS-enabled ciphers with AES256
-    # sslCiphers = "AES256+EECDH:AES256+EDH:!aNULL";
-    # Setup Nextcloud virtual host to listen on ports
     virtualHosts = {
-      "nextcloud.kraken.box" = {
-        ## Force HTTP redirect to HTTPS
-        # forceSSL = false;
-        ## LetsEncrypt
-        # enableACME = false;
+      "nextcloud.home.garrettruffner.com" = {
+         listen = [ { addr = "127.0.0.1"; port = 8080; } ];
+         locations."/*".proxyPass = "http://127.0.0.1:8080";
       };
     };
   };
@@ -33,7 +14,7 @@
   services.nextcloud = {
     enable = true;
     package = pkgs.nextcloud27;
-    hostName = "nextcloud.kraken.box";
+    hostName = "nextcloud.home.garrettruffner.com";
     home = "/tank/shack/cloud/nextcloud/nextcloudconfig";
     datadir = "/tank/shack/cloud/nextcloud/nextcloudstorage";
 
@@ -44,7 +25,7 @@
 
     config = {
       # Further forces Nextcloud to use HTTPS
-      overwriteProtocol = "http";
+      overwriteProtocol = "https";
 
       # Nextcloud PostegreSQL database configuration
       dbtype = "pgsql";

@@ -4,6 +4,7 @@
     [
       ./hardware-configuration.nix
       ./disks.nix
+      ./modules/traefik.nix      
       users-box
       mixins-openssh
       mixins-common
@@ -13,6 +14,7 @@
       profiles-libvirtd 
       profiles-zfs
       services-nextcloud
+      services-jellyfin
     ];
 
   _module.args = {
