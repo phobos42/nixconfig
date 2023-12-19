@@ -24,6 +24,8 @@
       };
       http = {
         services = {
+          radarr.loadBalancer.servers = [{ url = "http://127.0.0.1:7878"; }];
+          deluge.loadBalancer.servers = [{ url = "http://127.0.0.1:8112"; }];
           nextcloud.loadBalancer.servers = [{ url = "http://127.0.0.1:8080"; }];
           jellyfin.loadBalancer.servers = [ { url = "http://127.0.0.1:8096"; } ];
         };
@@ -56,6 +58,42 @@
             rule = "Host(`jellyfin.home.garrettruffner.com`)";
             entryPoints = [ "websecure" ];
             service = "jellyfin";
+            tls = {
+              certResolver = "letsencrypt";
+              domains = [{
+                main = "home.garrettruffner.com";
+                sans = "*.home.garrettruffner.com";
+              }];
+            };     
+          };
+          deluge-insecure = {
+            rule = "Host(`deluge.home.garrettruffner.com`)";
+            entryPoints = [ "web" ];
+            service = "deluge";
+            middlewares = "redirect-to-https";
+          };
+          deluge = {
+            rule = "Host(`deluge.home.garrettruffner.com`)";
+            entryPoints = [ "websecure" ];
+            service = "deluge";
+            tls = {
+              certResolver = "letsencrypt";
+              domains = [{
+                main = "home.garrettruffner.com";
+                sans = "*.home.garrettruffner.com";
+              }];
+            };     
+          };
+          radarr-insecure = {
+            rule = "Host(`radarr.home.garrettruffner.com`)";
+            entryPoints = [ "web" ];
+            service = "radarr";
+            middlewares = "redirect-to-https";
+          };
+          radarr = {
+            rule = "Host(`radarr.home.garrettruffner.com`)";
+            entryPoints = [ "websecure" ];
+            service = "radarr";
             tls = {
               certResolver = "letsencrypt";
               domains = [{

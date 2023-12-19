@@ -8,6 +8,7 @@ in
     isNormalUser = true;
     extraGroups = [
       "wheel"
+      "media"
     ];
     hashedPassword = "$6$x4R//6ix5xhSUKMI$Tu6jkZJOcRQo6UGVtcvZq.1N7SGibdZtkVfavKuaKYVNReeOGITTKlpYgQxGXc.KrQ8CWT5DKgydUKKz9hvGp.";
     packages = with pkgs; [

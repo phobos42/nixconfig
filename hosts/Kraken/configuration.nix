@@ -1,20 +1,23 @@
 { config, pkgs, inputs, ... }:
 {
-  imports = with inputs.self.nixosModules; 
+  imports = with inputs.self.nixosModules;
     [
       ./hardware-configuration.nix
       ./disks.nix
-      ./modules/traefik.nix      
+      ./config/traefik.nix
+      ./config/pia-config.nix
       users-box
       mixins-openssh
       mixins-common
       mixins-nm
       mixins-tlp
       profiles-docker
-      profiles-libvirtd 
+      profiles-libvirtd
       profiles-zfs
       services-nextcloud
       services-jellyfin
+      services-deluge
+      services-radarr
     ];
 
   _module.args = {
@@ -53,7 +56,7 @@
     #keyMap = "us";
     useXkbConfig = true; # use xkb.options in tty.
   };
-  
+
   environment.systemPackages = with pkgs; [
     wget
     powertop
@@ -63,6 +66,8 @@
     rsync
   ];
 
+
+  users.groups.media = {};
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
   # accidentally delete configuration.nix.
