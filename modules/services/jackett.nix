@@ -1,0 +1,5 @@
+{
+  services.jackett = {
+    enable = true;
+  };
+}

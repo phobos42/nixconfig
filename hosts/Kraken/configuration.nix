@@ -18,6 +18,7 @@
       services-jellyfin
       services-deluge
       services-radarr
+      services-jackett
     ];
 
   _module.args = {

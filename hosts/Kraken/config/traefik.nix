@@ -24,6 +24,7 @@
       };
       http = {
         services = {
+          jackett.loadBalancer.servers = [{ url = "http://127.0.0.1:9117"; }];
           radarr.loadBalancer.servers = [{ url = "http://127.0.0.1:7878"; }];
           deluge.loadBalancer.servers = [{ url = "http://127.0.0.1:8112"; }];
           nextcloud.loadBalancer.servers = [{ url = "http://127.0.0.1:8080"; }];
@@ -94,6 +95,24 @@
             rule = "Host(`radarr.home.garrettruffner.com`)";
             entryPoints = [ "websecure" ];
             service = "radarr";
+            tls = {
+              certResolver = "letsencrypt";
+              domains = [{
+                main = "home.garrettruffner.com";
+                sans = "*.home.garrettruffner.com";
+              }];
+            };     
+          };
+          jackett-insecure = {
+            rule = "Host(`jackett.home.garrettruffner.com`)";
+            entryPoints = [ "web" ];
+            service = "jackett";
+            middlewares = "redirect-to-https";
+          };
+          jackett = {
+            rule = "Host(`jackett.home.garrettruffner.com`)";
+            entryPoints = [ "websecure" ];
+            service = "jackett";
             tls = {
               certResolver = "letsencrypt";
               domains = [{
