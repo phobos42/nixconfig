@@ -19,6 +19,7 @@
       services-deluge
       services-radarr
       services-jackett
+      services-sonarr
     ];
 
   _module.args = {

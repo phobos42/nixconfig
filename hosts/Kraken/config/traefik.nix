@@ -24,11 +24,12 @@
       };
       http = {
         services = {
+          sonarr.loadBalancer.servers = [{ url = "http://127.0.0.1:8989"; }];
           jackett.loadBalancer.servers = [{ url = "http://127.0.0.1:9117"; }];
           radarr.loadBalancer.servers = [{ url = "http://127.0.0.1:7878"; }];
           deluge.loadBalancer.servers = [{ url = "http://127.0.0.1:8112"; }];
           nextcloud.loadBalancer.servers = [{ url = "http://127.0.0.1:8080"; }];
-          jellyfin.loadBalancer.servers = [ { url = "http://127.0.0.1:8096"; } ];
+          jellyfin.loadBalancer.servers = [{ url = "http://127.0.0.1:8096"; }];
         };
         routers = {
           nextcloud-insecure = {
@@ -47,7 +48,7 @@
                 main = "home.garrettruffner.com";
                 sans = "*.home.garrettruffner.com";
               }];
-            };            
+            };
           };
           jellyfin-insecure = {
             rule = "Host(`jellyfin.home.garrettruffner.com`)";
@@ -65,7 +66,7 @@
                 main = "home.garrettruffner.com";
                 sans = "*.home.garrettruffner.com";
               }];
-            };     
+            };
           };
           deluge-insecure = {
             rule = "Host(`deluge.home.garrettruffner.com`)";
@@ -83,7 +84,7 @@
                 main = "home.garrettruffner.com";
                 sans = "*.home.garrettruffner.com";
               }];
-            };     
+            };
           };
           radarr-insecure = {
             rule = "Host(`radarr.home.garrettruffner.com`)";
@@ -101,7 +102,7 @@
                 main = "home.garrettruffner.com";
                 sans = "*.home.garrettruffner.com";
               }];
-            };     
+            };
           };
           jackett-insecure = {
             rule = "Host(`jackett.home.garrettruffner.com`)";
@@ -119,7 +120,25 @@
                 main = "home.garrettruffner.com";
                 sans = "*.home.garrettruffner.com";
               }];
-            };     
+            };
+          };
+          sonarr-insecure = {
+            rule = "Host(`sonarr.home.garrettruffner.com`)";
+            entryPoints = [ "web" ];
+            service = "sonarr";
+            middlewares = "redirect-to-https";
+          };
+          sonarr = {
+            rule = "Host(`sonarr.home.garrettruffner.com`)";
+            entryPoints = [ "websecure" ];
+            service = "sonarr";
+            tls = {
+              certResolver = "letsencrypt";
+              domains = [{
+                main = "home.garrettruffner.com";
+                sans = "*.home.garrettruffner.com";
+              }];
+            };
           };
         };
       };
