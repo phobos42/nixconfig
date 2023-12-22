@@ -3,6 +3,7 @@
   imports = with inputs.self.nixosModules; 
     [
       ./hardware-configuration.nix
+      ./config/tailscale.nix
       users-box
       mixins-openssh
       mixins-common
