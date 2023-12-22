@@ -11,11 +11,12 @@
       profiles-libvirtd
       profiles-docker
       services-flame
+      services-pihole
     ];
 
   _module.args = {
     nixinate = {
-      host = "Bang.Box";
+      host = "192.168.1.102";
       sshUser = "box";
       buildOn = "remote";
       substituteOnTarget = true;
