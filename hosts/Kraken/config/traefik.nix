@@ -1,5 +1,15 @@
 { config, lib, ... }:
-
+let
+  base-domain = "garrettruffner.com";
+  active-domains = [{
+    main = "home.${base-domain}";
+    sans = "*.home.${base-domain}";
+  }
+    {
+      main = "tailnethome.${base-domain}";
+      sans = "*.tailnethome.${base-domain}";
+    }];
+in
 {
   networking.firewall.allowedTCPPorts = [ 80 443 ];
 
@@ -33,111 +43,93 @@
         };
         routers = {
           nextcloud-insecure = {
-            rule = "Host(`nextcloud.home.garrettruffner.com`)";
+            rule = "HostRegexp(`nextcloud.{subdomain:[a-z]+}.${base-domain}`)";
             entryPoints = [ "web" ];
             service = "nextcloud";
             middlewares = "redirect-to-https";
           };
           nextcloud = {
-            rule = "Host(`nextcloud.home.garrettruffner.com`)";
+            rule = "HostRegexp(`nextcloud.{subdomain:[a-z]+}.${base-domain}`)";
             entryPoints = [ "websecure" ];
             service = "nextcloud";
             tls = {
               certResolver = "letsencrypt";
-              domains = [{
-                main = "home.garrettruffner.com";
-                sans = "*.home.garrettruffner.com";
-              }];
+              domains = active-domains;
             };
           };
           jellyfin-insecure = {
-            rule = "Host(`jellyfin.home.garrettruffner.com`)";
+            rule = "HostRegexp(`jellyfin.{subdomain:[a-z]+}.${base-domain}`)";
             entryPoints = [ "web" ];
             service = "jellyfin";
             middlewares = "redirect-to-https";
           };
           jellyfin = {
-            rule = "Host(`jellyfin.home.garrettruffner.com`)";
+            rule = "HostRegexp(`jellyfin.{subdomain:[a-z]+}.${base-domain}`)";
             entryPoints = [ "websecure" ];
             service = "jellyfin";
             tls = {
               certResolver = "letsencrypt";
-              domains = [{
-                main = "home.garrettruffner.com";
-                sans = "*.home.garrettruffner.com";
-              }];
+              domains = active-domains;
             };
           };
           deluge-insecure = {
-            rule = "Host(`deluge.home.garrettruffner.com`)";
+            rule = "HostRegexp(`deluge.{subdomain:[a-z]+}.${base-domain}`)";
             entryPoints = [ "web" ];
             service = "deluge";
             middlewares = "redirect-to-https";
           };
           deluge = {
-            rule = "Host(`deluge.home.garrettruffner.com`)";
+            rule = "HostRegexp(`deluge.{subdomain:[a-z]+}.${base-domain}`)";
             entryPoints = [ "websecure" ];
             service = "deluge";
             tls = {
               certResolver = "letsencrypt";
-              domains = [{
-                main = "home.garrettruffner.com";
-                sans = "*.home.garrettruffner.com";
-              }];
+              domains = active-domains;
             };
           };
           radarr-insecure = {
-            rule = "Host(`radarr.home.garrettruffner.com`)";
+            rule = "HostRegexp(`radarr.{subdomain:[a-z]+}.${base-domain}`)";
             entryPoints = [ "web" ];
             service = "radarr";
             middlewares = "redirect-to-https";
           };
           radarr = {
-            rule = "Host(`radarr.home.garrettruffner.com`)";
+            rule = "HostRegexp(`radarr.{subdomain:[a-z]+}.${base-domain}`)";
             entryPoints = [ "websecure" ];
             service = "radarr";
             tls = {
               certResolver = "letsencrypt";
-              domains = [{
-                main = "home.garrettruffner.com";
-                sans = "*.home.garrettruffner.com";
-              }];
+              domains = active-domains;
             };
           };
           jackett-insecure = {
-            rule = "Host(`jackett.home.garrettruffner.com`)";
+            rule = "HostRegexp(`jackett.{subdomain:[a-z]+}.${base-domain}`)";
             entryPoints = [ "web" ];
             service = "jackett";
             middlewares = "redirect-to-https";
           };
           jackett = {
-            rule = "Host(`jackett.home.garrettruffner.com`)";
+            rule = "HostRegexp(`jackett.{subdomain:[a-z]+}.${base-domain}`)";
             entryPoints = [ "websecure" ];
             service = "jackett";
             tls = {
               certResolver = "letsencrypt";
-              domains = [{
-                main = "home.garrettruffner.com";
-                sans = "*.home.garrettruffner.com";
-              }];
+              domains = active-domains;
             };
           };
           sonarr-insecure = {
-            rule = "Host(`sonarr.home.garrettruffner.com`)";
+            rule = "HostRegexp(`sonarr.{subdomain:[a-z]+}.${base-domain}`)";
             entryPoints = [ "web" ];
             service = "sonarr";
             middlewares = "redirect-to-https";
           };
           sonarr = {
-            rule = "Host(`sonarr.home.garrettruffner.com`)";
+            rule = "HostRegexp(`sonarr.{subdomain:[a-z]+}.${base-domain}`)";
             entryPoints = [ "websecure" ];
             service = "sonarr";
             tls = {
               certResolver = "letsencrypt";
-              domains = [{
-                main = "home.garrettruffner.com";
-                sans = "*.home.garrettruffner.com";
-              }];
+              domains = active-domains;
             };
           };
         };

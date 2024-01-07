@@ -6,6 +6,7 @@
       ./disks.nix
       ./config/traefik.nix
       ./config/pia-config.nix
+      ./config/tailscale.nix
       users-box
       mixins-openssh
       mixins-common
@@ -24,7 +25,7 @@
 
   _module.args = {
     nixinate = {
-      host = "Kraken.box";
+      host = "192.168.1.101";
       sshUser = "box";
       buildOn = "remote";
       substituteOnTarget = true;
