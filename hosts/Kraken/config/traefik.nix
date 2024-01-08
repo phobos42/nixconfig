@@ -1,14 +1,54 @@
 { config, lib, ... }:
 let
   base-domain = "garrettruffner.com";
-  active-domains = [{
-    main = "home.${base-domain}";
-    sans = "*.home.${base-domain}";
-  }
+
+  active-domains = [
+    {
+      main = "home.${base-domain}";
+      sans = "*.home.${base-domain}";
+    }
     {
       main = "tailnethome.${base-domain}";
       sans = "*.tailnethome.${base-domain}";
-    }];
+    }
+  ];
+  serviceNames = [
+    "sonarr"
+    "jackett"
+    "radarr"
+    "deluge"
+    "nextcloud"
+    "jellyfin"
+  ];
+
+  insecureServiceValues = builtins.listToAttrs (builtins.map
+    (nameVal: {
+      name = "${nameVal}-insecure";
+      value = {
+        rule = "HostRegexp(`${nameVal}.{subdomain:[a-z]+}.${base-domain}`)";
+        entryPoints = [ "web" ];
+        service = "${nameVal}";
+        middlewares = "redirect-to-https";
+      };
+    }
+    )
+    serviceNames);
+
+  secureServiceValues = builtins.listToAttrs (builtins.map
+    (nameVal: {
+      name = "${nameVal}";
+      value = {
+        rule = "HostRegexp(`${nameVal}.{subdomain:[a-z]+}.${base-domain}`)";
+        entryPoints = [ "websecure" ];
+        service = "${nameVal}";
+        tls = {
+          certResolver = "letsencrypt";
+          domains = active-domains;
+        };
+      };
+    }
+    )
+    serviceNames);
 in
 {
   networking.firewall.allowedTCPPorts = [ 80 443 ];
@@ -41,98 +81,8 @@ in
           nextcloud.loadBalancer.servers = [{ url = "http://127.0.0.1:8080"; }];
           jellyfin.loadBalancer.servers = [{ url = "http://127.0.0.1:8096"; }];
         };
-        routers = {
-          nextcloud-insecure = {
-            rule = "HostRegexp(`nextcloud.{subdomain:[a-z]+}.${base-domain}`)";
-            entryPoints = [ "web" ];
-            service = "nextcloud";
-            middlewares = "redirect-to-https";
-          };
-          nextcloud = {
-            rule = "HostRegexp(`nextcloud.{subdomain:[a-z]+}.${base-domain}`)";
-            entryPoints = [ "websecure" ];
-            service = "nextcloud";
-            tls = {
-              certResolver = "letsencrypt";
-              domains = active-domains;
-            };
-          };
-          jellyfin-insecure = {
-            rule = "HostRegexp(`jellyfin.{subdomain:[a-z]+}.${base-domain}`)";
-            entryPoints = [ "web" ];
-            service = "jellyfin";
-            middlewares = "redirect-to-https";
-          };
-          jellyfin = {
-            rule = "HostRegexp(`jellyfin.{subdomain:[a-z]+}.${base-domain}`)";
-            entryPoints = [ "websecure" ];
-            service = "jellyfin";
-            tls = {
-              certResolver = "letsencrypt";
-              domains = active-domains;
-            };
-          };
-          deluge-insecure = {
-            rule = "HostRegexp(`deluge.{subdomain:[a-z]+}.${base-domain}`)";
-            entryPoints = [ "web" ];
-            service = "deluge";
-            middlewares = "redirect-to-https";
-          };
-          deluge = {
-            rule = "HostRegexp(`deluge.{subdomain:[a-z]+}.${base-domain}`)";
-            entryPoints = [ "websecure" ];
-            service = "deluge";
-            tls = {
-              certResolver = "letsencrypt";
-              domains = active-domains;
-            };
-          };
-          radarr-insecure = {
-            rule = "HostRegexp(`radarr.{subdomain:[a-z]+}.${base-domain}`)";
-            entryPoints = [ "web" ];
-            service = "radarr";
-            middlewares = "redirect-to-https";
-          };
-          radarr = {
-            rule = "HostRegexp(`radarr.{subdomain:[a-z]+}.${base-domain}`)";
-            entryPoints = [ "websecure" ];
-            service = "radarr";
-            tls = {
-              certResolver = "letsencrypt";
-              domains = active-domains;
-            };
-          };
-          jackett-insecure = {
-            rule = "HostRegexp(`jackett.{subdomain:[a-z]+}.${base-domain}`)";
-            entryPoints = [ "web" ];
-            service = "jackett";
-            middlewares = "redirect-to-https";
-          };
-          jackett = {
-            rule = "HostRegexp(`jackett.{subdomain:[a-z]+}.${base-domain}`)";
-            entryPoints = [ "websecure" ];
-            service = "jackett";
-            tls = {
-              certResolver = "letsencrypt";
-              domains = active-domains;
-            };
-          };
-          sonarr-insecure = {
-            rule = "HostRegexp(`sonarr.{subdomain:[a-z]+}.${base-domain}`)";
-            entryPoints = [ "web" ];
-            service = "sonarr";
-            middlewares = "redirect-to-https";
-          };
-          sonarr = {
-            rule = "HostRegexp(`sonarr.{subdomain:[a-z]+}.${base-domain}`)";
-            entryPoints = [ "websecure" ];
-            service = "sonarr";
-            tls = {
-              certResolver = "letsencrypt";
-              domains = active-domains;
-            };
-          };
-        };
+
+        routers = lib.mkMerge [ secureServiceValues insecureServiceValues ];
       };
     };
 
