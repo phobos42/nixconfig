@@ -1,13 +1,12 @@
 { config, ... }:
 {
-  virtualisation.oci-containers.backend = "docker";
   virtualisation.oci-containers.containers = {
     pihole = {
       image = "pihole/pihole:latest";
       ports = [
         "53:53/tcp"
         "53:53/udp"
-        "80:80"
+        "1398:80"
       ];
       volumes = [
         "./etc-pihole:/etc/pihole"
@@ -17,7 +16,7 @@
     };
   };
 }
-
+# "traefik.https.routers.example.rule" = "Host(`example.container`)"
 # services:
 #   pihole:
 #     container_name: pihole

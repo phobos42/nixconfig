@@ -4,6 +4,8 @@
     [
       ./hardware-configuration.nix
       ./config/tailscale.nix
+      ./config/traefik.nix
+      ./config/zwavejs.nix
       users-box
       mixins-openssh
       mixins-common
@@ -11,8 +13,10 @@
       mixins-tlp
       profiles-libvirtd
       profiles-docker
-      services-flame
-      services-pihole
+      containers-pihole
+      containers-flame
+      # profiles-podman
+      containers-homeassistant
     ];
 
   _module.args = {
