@@ -33,9 +33,11 @@
       dbhost = "/run/postgresql"; # nextcloud will add /.s.PGSQL.5432 by itself
       dbname = "nextcloud";
       dbpassFile = "/tank/shack/cloud/nextcloud/nextcloud-db-pass";
-
       adminpassFile = "/tank/shack/cloud/nextcloud/nextcloud-admin-pass";
       adminuser = "admin";
+      extraTrustedDomains = [
+        "nextcloud.tailnethome.garrettruffner.com"
+      ];
     };
   };
   services.postgresql = {
