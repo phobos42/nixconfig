@@ -21,6 +21,9 @@
       services-radarr
       services-jackett
       services-sonarr
+      services-cockpit
+      services-udisks2
+      containers-scrutiny
     ];
 
   _module.args = {
