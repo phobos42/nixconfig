@@ -24,6 +24,7 @@
       services-cockpit
       services-udisks2
       containers-scrutiny
+      containers-homarr
     ];
 
   _module.args = {

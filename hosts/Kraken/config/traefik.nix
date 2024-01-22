@@ -21,6 +21,7 @@ let
     "jellyfin"
     "cockpit"
     "scrutiny"
+    "homarr"
   ];
 
   insecureServiceValues = builtins.listToAttrs (builtins.map
@@ -76,8 +77,9 @@ in
       };
       http = {
         services = {
-          scrutiny.loadBalancer.servers = [{url = "http://127.0.0.1:8085"; }];
-          cockpit.loadBalancer.servers = [{url = "http://127.0.0.1:9090"; }];
+          homarr.loadBalancer.servers = [{ url = "http://127.0.0.1:7575"; }];
+          scrutiny.loadBalancer.servers = [{ url = "http://127.0.0.1:8085"; }];
+          cockpit.loadBalancer.servers = [{ url = "http://127.0.0.1:9090"; }];
           sonarr.loadBalancer.servers = [{ url = "http://127.0.0.1:8989"; }];
           jackett.loadBalancer.servers = [{ url = "http://127.0.0.1:9117"; }];
           radarr.loadBalancer.servers = [{ url = "http://127.0.0.1:7878"; }];
