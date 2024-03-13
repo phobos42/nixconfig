@@ -10,8 +10,8 @@
       image = "ghcr.io/home-assistant/home-assistant:stable"; # Warning: if the tag does not change, the image will not be updated
       extraOptions = [ 
         "--network=host" 
-        "--device=/dev/ttyACM0:/dev/ttyACM0"
-        "--device=/dev/ttyACM1:/dev/ttyACM1"
+        "--device=/dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_V2_20231102114932-if00:/dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_V2_20231102114932-if00"
+        "--device=/dev/serial/by-id/usb-Zooz_800_Z-Wave_Stick_533D004242-if00:/dev/serial/by-id/usb-Zooz_800_Z-Wave_Stick_533D004242-if00"
       ];
     };
   };
