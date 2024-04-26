@@ -53,6 +53,7 @@
         }
       ];
     };
+    defaultGateway.interface = "enp3s0";
   };
 
   time.timeZone = "America/Chicago";

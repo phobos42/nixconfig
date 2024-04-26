@@ -43,6 +43,7 @@
           prefixLength = 24;
         }
       ];
+      defaultGateway.interface = "enp0s20u1";
     };
   };
 
