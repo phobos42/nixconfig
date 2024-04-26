@@ -6,7 +6,7 @@
     nixpkgs2311.url = "github:nixos/nixpkgs/nixos-23.11";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     nixinate = {
-      url = "github:matthewcroughan/nixinate";
+      url = "github:phobos42/nixinate";
       inputs.nixpkgs.follows = "nixpkgs2311";
     };
     home-manager = {

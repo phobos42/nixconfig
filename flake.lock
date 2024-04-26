@@ -45,15 +45,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1688141737,
-        "narHash": "sha256-qHrNMYWukOKmKVf6wXOGKj1xxUnOGjvTRbt/PLLXuBE=",
-        "owner": "matthewcroughan",
+        "lastModified": 1713923465,
+        "narHash": "sha256-yMYGNN5B5UF2lHVbcqbFvSAcL9imzVzNYZ4UpW4TR1o=",
+        "owner": "phobos42",
         "repo": "nixinate",
-        "rev": "7902ae845e6cc5bd450e510cdf5e009a6e4a44d9",
+        "rev": "d5d741f6187b36b449c469a9f5838c79b5400324",
         "type": "github"
       },
       "original": {
-        "owner": "matthewcroughan",
+        "owner": "phobos42",
         "repo": "nixinate",
         "type": "github"
       }
