@@ -22,6 +22,8 @@ let
     "cockpit"
     "scrutiny"
     "homarr"
+    "syncthing"
+    "vaultwarden"
   ];
 
   insecureServiceValues = builtins.listToAttrs (builtins.map
@@ -86,9 +88,11 @@ in
           deluge.loadBalancer.servers = [{ url = "http://127.0.0.1:8112"; }];
           nextcloud.loadBalancer.servers = [{ url = "http://127.0.0.1:8080"; }];
           jellyfin.loadBalancer.servers = [{ url = "http://127.0.0.1:8096"; }];
+          syncthing.loadBalancer.servers = [{ url = "http://127.0.0.1:8384"; }];
+          vaultwarden.loadBalancer.servers = [{ url = "http://127.0.0.1:8222"; }];
         };
-
-        routers = lib.mkMerge [ secureServiceValues insecureServiceValues ];
+        routers = lib.mkMerge
+          [ secureServiceValues insecureServiceValues ];
       };
     };
 

@@ -1,6 +1,6 @@
 { config, pkgs, inputs, ... }:
 {
-  imports = with inputs.self.nixosModules; 
+  imports = with inputs.self.nixosModules;
     [
       ./hardware-configuration.nix
       ./config/tailscale.nix
@@ -33,8 +33,11 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-   networking = {
+  networking = {
     hostName = "BangBox";
+    defaultGateway = {
+      interface = "enp0s20u1";
+    };
     interfaces.enp0s20u1 = {
       useDHCP = false;
       ipv4.addresses = [
@@ -43,7 +46,6 @@
           prefixLength = 24;
         }
       ];
-      defaultGateway.interface = "enp0s20u1";
     };
   };
 

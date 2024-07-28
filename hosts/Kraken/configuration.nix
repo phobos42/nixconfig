@@ -23,6 +23,8 @@
       services-sonarr
       services-cockpit
       services-udisks2
+      services-syncthing
+      services-vaultwarden
       containers-scrutiny
       containers-homarr
     ];
@@ -44,6 +46,9 @@
 
   networking = {
     hostName = "Kraken";
+    defaultGateway = {
+      interface = "enp3s0";
+    };
     interfaces.enp3s0 = {
       useDHCP = false;
       ipv4.addresses = [
@@ -53,7 +58,6 @@
         }
       ];
     };
-    defaultGateway.interface = "enp3s0";
   };
 
   time.timeZone = "America/Chicago";
@@ -75,7 +79,8 @@
   ];
 
 
-  users.groups.media = {};
+  users.groups.media = { };
+  users.groups.secure = { };
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
   # accidentally delete configuration.nix.
