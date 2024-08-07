@@ -30,7 +30,7 @@ let
     (nameVal: {
       name = "${nameVal}-insecure";
       value = {
-        rule = "HostRegexp(`${nameVal}.{subdomain:[a-z]+}.${base-domain}`)";
+        rule = "HostRegexp(`${nameVal}\.([a-z]+)\.${base-domain}`)";
         entryPoints = [ "web" ];
         service = "${nameVal}";
         middlewares = "redirect-to-https";
@@ -39,11 +39,13 @@ let
     )
     serviceNames);
 
+
+
   secureServiceValues = builtins.listToAttrs (builtins.map
     (nameVal: {
       name = "${nameVal}";
       value = {
-        rule = "HostRegexp(`${nameVal}.{subdomain:[a-z]+}.${base-domain}`)";
+        rule = "HostRegexp(`${nameVal}\.([a-z]+)\.${base-domain}`)";
         entryPoints = [ "websecure" ];
         service = "${nameVal}";
         tls = {
@@ -54,6 +56,14 @@ let
     }
     )
     serviceNames);
+
+  apivalue = builtins.listToAttrs [{
+    name = "api";
+    value = {
+      rule = "Host(`traefik.home.garrettruffner.com`)";
+      service = "api@internal";
+    };
+  }];
 in
 {
   networking.firewall.allowedTCPPorts = [ 80 443 ];
@@ -86,25 +96,28 @@ in
           jackett.loadBalancer.servers = [{ url = "http://127.0.0.1:9117"; }];
           radarr.loadBalancer.servers = [{ url = "http://127.0.0.1:7878"; }];
           deluge.loadBalancer.servers = [{ url = "http://127.0.0.1:8112"; }];
-          nextcloud.loadBalancer.servers = [{ url = "http://127.0.0.1:8080"; }];
+          nextcloud.loadBalancer.servers = [{ url = "http://127.0.0.1:8081"; }];
           jellyfin.loadBalancer.servers = [{ url = "http://127.0.0.1:8096"; }];
           syncthing.loadBalancer.servers = [{ url = "http://127.0.0.1:8384"; }];
           vaultwarden.loadBalancer.servers = [{ url = "http://127.0.0.1:8222"; }];
         };
-        routers = lib.mkMerge
-          [ secureServiceValues insecureServiceValues ];
+        routers = lib.mkMerge [ secureServiceValues insecureServiceValues apivalue ];
       };
     };
 
     staticConfigOptions = {
       global = {
-        checkNewVersion = false;
+        checkNewVersion = true;
         sendAnonymousUsage = false;
       };
+      api = {
+        insecure = true;
+        dashboard = true;
+        debug = true;
+      };
 
-      entryPoints.web.address = ":80";
       entryPoints.websecure.address = ":443";
-
+      entryPoints.web.address = ":80";
 
       certificatesResolvers = {
         letsencrypt.acme = {

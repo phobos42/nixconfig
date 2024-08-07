@@ -9,7 +9,7 @@
       trusted-users = [ "@wheel" "root" "nix-ssh" ];
       auto-optimise-store = true;
     };
-    package = pkgs.nixVersions.unstable;
+    package = pkgs.nixVersions.latest;
     extraOptions =
       let empty_registry = builtins.toFile "empty-flake-registry.json" ''{"flakes":[],"version":2}''; in
       ''

@@ -2,12 +2,11 @@
   description = "Phobos NixOS Config";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs2311.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     nixinate = {
       url = "github:phobos42/nixinate";
-      inputs.nixpkgs.follows = "nixpkgs2311";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -23,7 +22,6 @@
     , nixinate
     , home-manager
     , nixpkgs
-    , nixpkgs2311
     , nixos-hardware
     , utils
     , ...

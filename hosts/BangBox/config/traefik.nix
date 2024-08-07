@@ -27,7 +27,7 @@ let
     (nameVal: {
       name = "${nameVal}-insecure";
       value = {
-        rule = "HostRegexp(`${nameVal}.{subdomain:[a-z0-9]+}.${base-domain}`)";
+        rule = "HostRegexp(`${nameVal}\.([a-z]+)\.${base-domain}`)";
         entryPoints = [ "web" ];
         service = "${nameVal}";
         middlewares = "redirect-to-https";
@@ -40,7 +40,7 @@ let
     (nameVal: {
       name = "${nameVal}";
       value = {
-        rule = "HostRegexp(`${nameVal}.{subdomain:[a-z0-9]+}.${base-domain}`)";
+        rule = "HostRegexp(`${nameVal}\.([a-z]+)\.${base-domain}`)";
         entryPoints = [ "websecure" ];
         service = "${nameVal}";
         tls = {
