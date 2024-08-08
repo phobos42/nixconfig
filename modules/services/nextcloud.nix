@@ -1,32 +1,35 @@
 { pkgs, ... }:
 {
-  # Force nextcloud to listed on port 8080 internally for traefik to take port 80+443
+  # Force nextcloud to listed on port 8081 internally for traefik to take port 80+443
   services.nginx = {
     enable = true;
     virtualHosts = {
       "nextcloud.home.garrettruffner.com" = {
-         listen = [ { addr = "127.0.0.1"; port = 8080; } ];
-         locations."/*".proxyPass = "http://127.0.0.1:8080";
+        listen = [{ addr = "127.0.0.1"; port = 8081; }];
+        locations."/*".proxyPass = "http://127.0.0.1:8081";
       };
     };
   };
 
   services.nextcloud = {
     enable = true;
-    package = pkgs.nextcloud27;
+    package = pkgs.nextcloud28;
     hostName = "nextcloud.home.garrettruffner.com";
     home = "/tank/shack/cloud/nextcloud/nextcloudconfig";
     datadir = "/tank/shack/cloud/nextcloud/nextcloudstorage";
 
     # Auto-update Nextcloud Apps
     autoUpdateApps.enable = true;
-    # Set what time makes sense for you
     autoUpdateApps.startAt = "05:00:00";
 
-    config = {
-      # Further forces Nextcloud to use HTTPS
-      overwriteProtocol = "https";
+    settings = {
+      overwriteprotocol = "https";
+      trusted_domains = [
+        "nextcloud.tailnethome.garrettruffner.com"
+      ];
+    };
 
+    config = {
       # Nextcloud PostegreSQL database configuration
       dbtype = "pgsql";
       dbuser = "nextcloud";
@@ -35,9 +38,7 @@
       dbpassFile = "/tank/shack/cloud/nextcloud/nextcloud-db-pass";
       adminpassFile = "/tank/shack/cloud/nextcloud/nextcloud-admin-pass";
       adminuser = "admin";
-      extraTrustedDomains = [
-        "nextcloud.tailnethome.garrettruffner.com"
-      ];
+
     };
   };
   services.postgresql = {
