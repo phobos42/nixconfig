@@ -1,24 +1,28 @@
-{ config, pkgs, inputs, ... }:
 {
-  imports = with inputs.self.nixosModules;
-    [
-      ./hardware-configuration.nix
-      ./config/tailscale.nix
-      ./config/traefik.nix
-      ./config/zwavejs.nix
-      users-box
-      users-deploy
-      mixins-openssh
-      mixins-common
-      mixins-nm
-      mixins-tlp
-      profiles-libvirtd
-      profiles-docker
-      containers-pihole
-      containers-flame
-      # profiles-podman
-      containers-homeassistant
-    ];
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
+{
+  imports = with inputs.self.nixosModules; [
+    ./hardware-configuration.nix
+    ./config/tailscale.nix
+    ./config/traefik.nix
+    ./config/zwavejs.nix
+    users-box
+    users-deploy
+    mixins-openssh
+    mixins-common
+    mixins-nm
+    mixins-tlp
+    profiles-libvirtd
+    profiles-docker
+    containers-pihole
+    containers-flame
+    # profiles-podman
+    containers-homeassistant
+  ];
 
   # _module.args = {
   #   nixinate = {
@@ -72,12 +76,11 @@
   ];
 
   services.logind.extraConfig = ''
-    	HandleLidSwitch=ignore
-    	LidSwitchIgnoreInhibited=no
-    	HandleLidSwitchDocked=ignore
-    	HandleLidSwitchExternalPower=ignore
+    HandleLidSwitch=ignore
+    LidSwitchIgnoreInhibited=no
+    HandleLidSwitchDocked=ignore
+    HandleLidSwitchExternalPower=ignore
   '';
 
   system.stateVersion = "23.11";
 }
-
