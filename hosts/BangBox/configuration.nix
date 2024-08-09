@@ -19,15 +19,15 @@
       containers-homeassistant
     ];
 
-  _module.args = {
-    nixinate = {
-      host = "192.168.1.102";
-      sshUser = "box";
-      buildOn = "remote";
-      substituteOnTarget = true;
-      hermetic = false;
-    };
-  };
+  # _module.args = {
+  #   nixinate = {
+  #     host = "192.168.1.102";
+  #     sshUser = "box";
+  #     buildOn = "remote";
+  #     substituteOnTarget = true;
+  #     hermetic = false;
+  #   };
+  # };
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -47,6 +47,7 @@
         }
       ];
     };
+    defaultGateway.interface = "enp0s20u1";
   };
 
   # Set your time zone.
