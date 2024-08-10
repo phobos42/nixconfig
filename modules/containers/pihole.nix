@@ -1,5 +1,10 @@
 { config, ... }:
 {
+  # Stop systemd-resolved from listening to port 53
+  services.resolved = {
+    enable = true;
+    extraConfig = "DNSStubListener=no";
+  };
   virtualisation.oci-containers.containers = {
     pihole = {
       image = "pihole/pihole:latest";
@@ -16,7 +21,8 @@
     };
   };
 }
-# "traefik.https.routers.example.rule" = "Host(`example.container`)"
+# Origin container definition:
+#
 # services:
 #   pihole:
 #     container_name: pihole
