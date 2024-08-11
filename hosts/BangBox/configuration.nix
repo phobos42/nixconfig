@@ -7,6 +7,7 @@
       ./config/traefik.nix
       ./config/zwavejs.nix
       users-box
+      users-deploy
       mixins-openssh
       mixins-common
       mixins-nm
@@ -22,7 +23,7 @@
   _module.args = {
     nixinate = {
       host = "192.168.1.102";
-      sshUser = "box";
+      sshUser = "deploy";
       buildOn = "remote";
       substituteOnTarget = true;
       hermetic = false;
