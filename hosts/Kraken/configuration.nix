@@ -8,6 +8,7 @@
       ./config/pia-config.nix
       ./config/tailscale.nix
       users-box
+      users-deploy
       mixins-openssh
       mixins-common
       mixins-nm
@@ -29,15 +30,15 @@
       containers-homarr
     ];
 
-  _module.args = {
-    nixinate = {
-      host = "192.168.1.101";
-      sshUser = "box";
-      buildOn = "remote";
-      substituteOnTarget = true;
-      hermetic = false;
-    };
-  };
+  # _module.args = {
+  #   nixinate = {
+  #     host = "192.168.1.101";
+  #     sshUser = "box";
+  #     buildOn = "remote";
+  #     substituteOnTarget = true;
+  #     hermetic = false;
+  #   };
+  # };
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;

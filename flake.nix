@@ -4,10 +4,10 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     nixos-hardware.url = "github:nixos/nixos-hardware";
-    nixinate = {
-      url = "github:phobos42/nixinate";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # nixinate = {
+    #   url = "github:phobos42/nixinate";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -20,7 +20,7 @@
   outputs =
     {
       self,
-      nixinate,
+      # nixinate,
       home-manager,
       nixpkgs,
       nixos-hardware,
@@ -37,7 +37,6 @@
       };
     in
     {
-      apps = nixinate.nixinate.x86_64-linux self;
       nixosModules = import ./modules { lib = nixpkgs.lib; };
       nixosConfigurations = {
         Kraken = nixpkgs.lib.nixosSystem {
@@ -77,43 +76,17 @@
             nodeNixpkgs = builtins.mapAttrs (name: value: value.pkgs) configs;
             nodeSpecialArgs = builtins.mapAttrs (name: value: value._module.specialArgs) configs;
           };
-
-          # BangBox =
-          #   { configs, ... }:
-          #   {
-          #     deployment = {
-          #       targetHost = "192.168.1.102";
-          #       targetUser = "box";
-          #       tags = [ "server" ];
-          #       allowLocalDeployment = false;
-          #       buildOnTarget = true;
-          #     };
-          #     # imports = configs.BangBox.modules;
-          #     imports = configs.BangBox._module.args.modules;
-          #   };
         } // builtins.mapAttrs
         (name: value: {
           deployment = {
             targetHost = name;
             targetUser = "deploy";
             buildOnTarget = true;
-            tags = [ "pc" ];
+            tags = [ "server" ];
             allowLocalDeployment = false;
           };
           imports = value._module.args.modules;
         })
         configs;
-
-      # // builtins.mapAttrs (machine: _: mkServer machine) (builtins.readDir ./config/machines/servers)
-      # // builtins.mapAttrs
-      #   (name: value: {
-      #     deployment = {
-      #       targetHost = name;
-      #       tags = [ "pc" ];
-      #       allowLocalDeployment = true;
-      #     };
-      #     imports = value._module.args.modules;
-      #   })
-      #   configs;
     };
 }
