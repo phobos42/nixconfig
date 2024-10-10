@@ -19,7 +19,7 @@
           label = "Vortex";
           id = "yzejp-g3vhs";
           enable = true;
-          devices = [ "bigmac" ];
+          devices = [ "bigmac" "gphone" "pond" ];
         };
       };
       devices = {
@@ -28,6 +28,17 @@
           id = "4U3PFOX-TNPSVSJ-IX36QOC-CCOPF5L-XXKHXBM-4EDFFZS-67FCLLO-FRJVIAZ";
           autoAcceptFolders = true;
         };
+        gphone = {
+          name = "gphone";
+          id = "L22YYBQ-FWMDNLL-RPWGWPQ-CREVHKB-ORL7HEE-F3N2ZL3-TMODDQQ-XLHJXQ5";
+          autoAcceptFolders = true;
+        };
+        pond = {
+          name = "pond";
+          id = "MYINBMX-7N6EOK6-GKJTLZS-UUSAJJJ-OS2DXDM-PX7JPQZ-FH5W3XM-VU54RQE";
+          autoAcceptFolders = true;
+        };
+
       };
     };
 
