@@ -26,6 +26,8 @@
       services-udisks2
       services-syncthing
       services-vaultwarden
+      services-ollama
+      services-openwebui
       containers-scrutiny
       containers-homarr
     ];

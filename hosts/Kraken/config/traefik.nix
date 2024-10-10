@@ -24,10 +24,12 @@ let
     "homarr"
     "syncthing"
     "vaultwarden"
+    "ollama"
+    "openwebui"
   ];
 
-  insecureServiceValues = builtins.listToAttrs (builtins.map
-    (nameVal: {
+  insecureServiceValues = builtins.listToAttrs (
+    builtins.map (nameVal: {
       name = "${nameVal}-insecure";
       value = {
         rule = "HostRegexp(`${nameVal}\.([A-Za-z0-9]+)\.${base-domain}`)";
@@ -35,14 +37,11 @@ let
         service = "${nameVal}";
         middlewares = "redirect-to-https";
       };
-    }
-    )
-    serviceNames);
+    }) serviceNames
+  );
 
-
-
-  secureServiceValues = builtins.listToAttrs (builtins.map
-    (nameVal: {
+  secureServiceValues = builtins.listToAttrs (
+    builtins.map (nameVal: {
       name = "${nameVal}";
       value = {
         rule = "HostRegexp(`${nameVal}\.([A-Za-z0-9]+)\.${base-domain}`)";
@@ -53,20 +52,24 @@ let
           domains = active-domains;
         };
       };
-    }
-    )
-    serviceNames);
+    }) serviceNames
+  );
 
-  apivalue = builtins.listToAttrs [{
-    name = "api";
-    value = {
-      rule = "Host(`traefik.home.garrettruffner.com`)";
-      service = "api@internal";
-    };
-  }];
+  apivalue = builtins.listToAttrs [
+    {
+      name = "api";
+      value = {
+        rule = "Host(`traefik.home.garrettruffner.com`)";
+        service = "api@internal";
+      };
+    }
+  ];
 in
 {
-  networking.firewall.allowedTCPPorts = [ 80 443 ];
+  networking.firewall.allowedTCPPorts = [
+    80
+    443
+  ];
 
   systemd.services.traefik = {
     environment = {
@@ -89,19 +92,25 @@ in
       };
       http = {
         services = {
-          homarr.loadBalancer.servers = [{ url = "http://127.0.0.1:7575"; }];
-          scrutiny.loadBalancer.servers = [{ url = "http://127.0.0.1:8085"; }];
-          cockpit.loadBalancer.servers = [{ url = "http://127.0.0.1:9090"; }];
-          sonarr.loadBalancer.servers = [{ url = "http://127.0.0.1:8989"; }];
-          jackett.loadBalancer.servers = [{ url = "http://127.0.0.1:9117"; }];
-          radarr.loadBalancer.servers = [{ url = "http://127.0.0.1:7878"; }];
-          deluge.loadBalancer.servers = [{ url = "http://127.0.0.1:8112"; }];
-          nextcloud.loadBalancer.servers = [{ url = "http://127.0.0.1:8081"; }];
-          jellyfin.loadBalancer.servers = [{ url = "http://127.0.0.1:8096"; }];
-          syncthing.loadBalancer.servers = [{ url = "http://127.0.0.1:8384"; }];
-          vaultwarden.loadBalancer.servers = [{ url = "http://127.0.0.1:8222"; }];
+          homarr.loadBalancer.servers = [ { url = "http://127.0.0.1:7575"; } ];
+          scrutiny.loadBalancer.servers = [ { url = "http://127.0.0.1:8085"; } ];
+          cockpit.loadBalancer.servers = [ { url = "http://127.0.0.1:9090"; } ];
+          sonarr.loadBalancer.servers = [ { url = "http://127.0.0.1:8989"; } ];
+          jackett.loadBalancer.servers = [ { url = "http://127.0.0.1:9117"; } ];
+          radarr.loadBalancer.servers = [ { url = "http://127.0.0.1:7878"; } ];
+          deluge.loadBalancer.servers = [ { url = "http://127.0.0.1:8112"; } ];
+          nextcloud.loadBalancer.servers = [ { url = "http://127.0.0.1:8081"; } ];
+          jellyfin.loadBalancer.servers = [ { url = "http://127.0.0.1:8096"; } ];
+          syncthing.loadBalancer.servers = [ { url = "http://127.0.0.1:8384"; } ];
+          vaultwarden.loadBalancer.servers = [ { url = "http://127.0.0.1:8222"; } ];
+          ollama.loadBalancer.servers = [ { url = "http://127.0.0.1:11434"; } ];
+          openwebui.loadBalancer.servers = [ { url = "http://127.0.0.1:1398"; } ];
         };
-        routers = lib.mkMerge [ secureServiceValues insecureServiceValues apivalue ];
+        routers = lib.mkMerge [
+          secureServiceValues
+          insecureServiceValues
+          apivalue
+        ];
       };
     };
 
