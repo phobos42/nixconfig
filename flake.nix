@@ -30,10 +30,8 @@
     let 
     system = "aarch64-darwin";
     pkgs = import nixpkgs {
-      inherit system;
-        config = {
-          allowUnfree = true;
-        };
+        inherit system;
+        # config.allowUnfree = true;
       };
     in
     {
@@ -72,7 +70,7 @@
             nixpkgs = pkgs;
             specialArgs = {
               inherit inputs;
-            };
+            };            
             nodeNixpkgs = builtins.mapAttrs (name: value: value.pkgs) configs;
             nodeSpecialArgs = builtins.mapAttrs (name: value: value._module.specialArgs) configs;
           };

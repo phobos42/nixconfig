@@ -8,6 +8,6 @@
       "/ollama"
     ];
     sandbox  = true;
-    acceleration = null;
+    acceleration = "cuda";
   };
 }
