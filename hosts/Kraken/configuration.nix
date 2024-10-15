@@ -9,7 +9,7 @@
   imports = with inputs.self.nixosModules; [
     ./hardware-configuration.nix
     ./disks.nix
-    ./config/traefik.nix
+    ./config/traefik-config.nix
     ./config/pia-config.nix
     ./config/tailscale.nix
     users-box
@@ -26,15 +26,15 @@
     services-deluge
     services-radarr
     services-jackett
-    services-sonarr
-    services-cockpit
-    services-udisks2
+    services-sonarr    
     services-syncthing
     services-vaultwarden
     services-ollama
     services-openwebui
-    containers-scrutiny
-    containers-homarr
+    monitoring-scrutiny
+    monitoring-udisks2
+    monitoring-homarr
+    monitoring-cockpit
   ];
 
   # _module.args = {
