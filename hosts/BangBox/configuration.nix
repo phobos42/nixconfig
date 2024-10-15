@@ -8,7 +8,6 @@
   imports = with inputs.self.nixosModules; [
     ./hardware-configuration.nix
     ./config/tailscale.nix
-    # ./config/traefik.nix
     ./config/traefik-config.nix
     users-box
     users-deploy
@@ -19,10 +18,7 @@
     profiles-libvirtd
     profiles-docker
     containers-pihole
-    # containers-flame
-    # profiles-podman
     containers-homeassistant
-    # services-traefik
   ];
 
   # _module.args = {
