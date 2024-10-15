@@ -9,6 +9,7 @@
     ./hardware-configuration.nix
     ./config/tailscale.nix
     ./config/traefik-config.nix
+    ./config/zwavejs.nix
     users-box
     users-deploy
     mixins-openssh
