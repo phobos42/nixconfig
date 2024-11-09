@@ -53,7 +53,6 @@
           modules = [
             utils.nixosModules.autoGenFromInputs
             ./hosts/BangBox/configuration.nix
-            #home-manager.nixosModules.home-manager
           ];
           specialArgs = {
             inherit inputs;

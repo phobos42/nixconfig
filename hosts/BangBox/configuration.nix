@@ -20,8 +20,8 @@
     profiles-docker
     containers-pihole
     containers-homeassistant
+    usermodules-default
   ];
-
   # _module.args = {
   #   nixinate = {
   #     host = "192.168.1.102";
