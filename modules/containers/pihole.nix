@@ -1,4 +1,7 @@
 { config, ... }:
+let
+  portNumber = 1398;
+in
 {
   # Stop systemd-resolved from listening to port 53
   services.resolved = {
@@ -11,7 +14,7 @@
       ports = [
         "53:53/tcp"
         "53:53/udp"
-        "1398:80"
+        "${toString portNumber}:80"
       ];
       volumes = [
         "./etc-pihole:/etc/pihole"
@@ -20,6 +23,15 @@
       environmentFiles = [ "/var/pihole-env" ];
     };
   };
+
+  services.traefik-wrapper.service-definitions = builtins.listToAttrs [
+    {
+      name = "vaultwarden";
+      value = {
+        url = "http://127.0.0.1:${toString portNumber}";
+      };
+    }
+  ];
 }
 # Origin container definition:
 #

@@ -1,3 +1,7 @@
+{ ... }:
+let
+  portNumber = 7575;
+in
 {
   virtualisation.oci-containers.containers = {
     homarr = {
@@ -11,6 +15,14 @@
       ];
     };
   };
+  services.traefik-wrapper.service-definitions = builtins.listToAttrs [
+    {
+      name = "homarr";
+      value = {
+        url = "http://127.0.0.1:${toString portNumber}";
+      };
+    }
+  ];
 }
 
 # homarr:

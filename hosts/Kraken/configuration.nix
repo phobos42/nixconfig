@@ -35,7 +35,10 @@
     monitoring-udisks2
     monitoring-homarr
     monitoring-cockpit
+    monitoring-prometheusExporter
+    monitoring-prometheusServer
     usermodules-default
+    monitoring-grafana
   ];
 
   # _module.args = {

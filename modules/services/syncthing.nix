@@ -1,3 +1,7 @@
+{ ... }:
+let
+  portNumber = 8384;
+in
 {
   services.syncthing = {
     user = "syncthing";
@@ -10,7 +14,7 @@
         enabled = true;
         tls = false;
         debugging = true;
-        address = "0.0.0.0:8384";
+        address = "0.0.0.0:${toString portNumber}";
       };
       folders = {
         Vortex = {
@@ -19,7 +23,11 @@
           label = "Vortex";
           id = "yzejp-g3vhs";
           enable = true;
-          devices = [ "bigmac" "gphone" "pond" ];
+          devices = [
+            "bigmac"
+            "gphone"
+            "pond"
+          ];
         };
       };
       devices = {
@@ -44,4 +52,12 @@
 
   };
   users.users.syncthing.extraGroups = [ "users" ];
+  services.traefik-wrapper.service-definitions = builtins.listToAttrs [
+    {
+      name = "syncthing";
+      value = {
+        url = "http://127.0.0.1:${toString portNumber}";
+      };
+    }
+  ];
 }

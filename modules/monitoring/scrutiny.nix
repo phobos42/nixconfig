@@ -1,3 +1,7 @@
+{ ... }:
+let
+  portNumber = 8085;
+in
 {
   services.smartd.enable = true;
   virtualisation.oci-containers.containers = {
@@ -23,4 +27,13 @@
       ];
     };
   };
+
+  services.traefik-wrapper.service-definitions = builtins.listToAttrs [
+    {
+      name = "scrutiny";
+      value = {
+        url = "http://127.0.0.1:${toString portNumber}";
+      };
+    }
+  ];
 }

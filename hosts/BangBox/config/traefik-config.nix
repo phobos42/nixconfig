@@ -11,12 +11,6 @@
       ];
       service-definitions = builtins.listToAttrs [
         {
-          name = "pihole";
-          value = {
-            url = "http://127.0.0.1:1398";
-          };
-        }
-        {
           name = "homeassistant";
           value = {
             url = "http://192.168.1.102:8123";

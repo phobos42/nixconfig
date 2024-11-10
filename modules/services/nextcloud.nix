@@ -1,12 +1,15 @@
 { pkgs, ... }:
+let
+  portNumber = 8081;
+in
 {
   # Force nextcloud to listed on port 8081 internally for traefik to take port 80+443
   services.nginx = {
     enable = true;
     virtualHosts = {
       "nextcloud.home.garrettruffner.com" = {
-        listen = [{ addr = "127.0.0.1"; port = 8081; }];
-        locations."/*".proxyPass = "http://127.0.0.1:8081";
+        listen = [{ addr = "127.0.0.1"; port = portNumber; }];
+        locations."/*".proxyPass = "http://127.0.0.1:${toString portNumber}";
       };
     };
   };
@@ -57,4 +60,12 @@
     requires = [ "postgresql.service" ];
     after = [ "postgresql.service" ];
   };
+  services.traefik-wrapper.service-definitions = builtins.listToAttrs [
+    {
+      name = "nextcloud";
+      value = {
+        url = "http://127.0.0.1:${toString portNumber}";
+      };
+    }
+  ];
 }

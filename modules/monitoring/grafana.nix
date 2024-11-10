@@ -1,16 +1,18 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 let
-  portNumber = 1398;
+  portNumber = 2342;
 in
 {
-  services.open-webui = {
-    package = pkgs.open-webui;
+  # grafana configuration
+  services.grafana = {
     enable = true;
+    # domain = "grafana.tailnethome.garrettruffner.com";
     port = portNumber;
+    addr = "127.0.0.1";
   };
   services.traefik-wrapper.service-definitions = builtins.listToAttrs [
     {
-      name = "openwebui";
+      name = "grafana";
       value = {
         url = "http://127.0.0.1:${toString portNumber}";
       };
