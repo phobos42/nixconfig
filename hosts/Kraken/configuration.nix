@@ -35,6 +35,7 @@
     monitoring-udisks2
     monitoring-homarr
     monitoring-cockpit
+    usermodules-default
   ];
 
   # _module.args = {
