@@ -26,7 +26,7 @@ in
 
   services.traefik-wrapper.service-definitions = builtins.listToAttrs [
     {
-      name = "vaultwarden";
+      name = "pihole";
       value = {
         url = "http://127.0.0.1:${toString portNumber}";
       };
