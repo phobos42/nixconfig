@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   portNumber = 8081;
 in
@@ -8,7 +8,12 @@ in
     enable = true;
     virtualHosts = {
       "nextcloud.home.garrettruffner.com" = {
-        listen = [{ addr = "127.0.0.1"; port = portNumber; }];
+        listen = [
+          {
+            addr = "127.0.0.1";
+            port = portNumber;
+          }
+        ];
         locations."/*".proxyPass = "http://127.0.0.1:${toString portNumber}";
       };
     };
@@ -27,9 +32,7 @@ in
 
     settings = {
       overwriteprotocol = "https";
-      trusted_domains = [
-        "nextcloud.tailnethome.garrettruffner.com"
-      ];
+      trusted_domains = [ "nextcloud.tailnethome.garrettruffner.com" ];
     };
 
     config = {
@@ -68,4 +71,7 @@ in
       };
     }
   ];
+  # services.prometheus.exporters.nextcloud = {
+  #   enable = true;
+  # };
 }

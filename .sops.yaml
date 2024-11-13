@@ -1,0 +1,14 @@
+keys:
+  - &admin_garrett age1n23acw00j9ays7m9xcgzdlsz7kmd04rpjy78enahx62m0xh834us0hqcx4
+  - &server_BangBox age1gh2dev7wtj9lfce8jykswfg80wz8j6c8gfgp7xr0qpx6jp2rw33spp0kd3
+  - &server_Kraken age13r0eqj2nux8yd7ecxj0hzsrxjzvxn64nadew9eg3z3glhxelwfsq6wqvjm
+  - &admin_sopkey age1pyaj9c6tevkmcxx6gl0gzmm2tessar3hs7gvcazqddzx69ak353skepz3r
+creation_rules:
+  - path_regex: ([A-Za-z]+)\.(ya?ml|json|env|ini|bin)$
+    key_groups:
+    - age:
+      - *admin_garrett
+      - *server_BangBox
+      - *admin_sopkey
+      - *server_Kraken
+      pgp:

@@ -86,6 +86,12 @@ with lib;
 
   };
   config = mkIf cfg.enable {
+    
+    sops.secrets.traefik = {
+      sopsFile = ./traefikKey.env;
+      format = "dotenv";
+      restartUnits = [ "traefik.service" ];
+    };
 
     networking.firewall.allowedTCPPorts = [
       80
@@ -97,7 +103,7 @@ with lib;
         CF_API_EMAIL = "garrettruffner42@gmail.com";
       };
       serviceConfig = {
-        EnvironmentFile = [ "/var/route53-apikey" ];
+        EnvironmentFile = [ "${config.sops.secrets.traefik.path}" ];
       };
     };
 

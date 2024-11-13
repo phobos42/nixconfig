@@ -20,7 +20,7 @@ in
         "./etc-pihole:/etc/pihole"
         "./etc-dnsmasq.d:/etc/dnsmasq.d"
       ];
-      environmentFiles = [ "/var/pihole-env" ];
+      environmentFiles = [ "${config.sops.secrets.pihole.path}" ];
     };
   };
 
@@ -32,6 +32,11 @@ in
       };
     }
   ];
+   sops.secrets.pihole = {
+    sopsFile = ./pihole.env;
+    format = "dotenv";
+    restartUnits = [ "docker-pihole.service" ];
+  };
 }
 # Origin container definition:
 #

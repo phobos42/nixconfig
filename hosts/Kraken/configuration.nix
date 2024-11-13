@@ -11,13 +11,14 @@
     ./disks.nix
     ./config/traefik-config.nix
     ./config/pia-config.nix
-    ./config/tailscale.nix
+    ./config/sops.nix
     users-box
     users-deploy
     mixins-openssh
     mixins-common
     mixins-nm
     mixins-tlp
+    mixins-tailscale
     profiles-docker
     profiles-libvirtd
     profiles-zfs

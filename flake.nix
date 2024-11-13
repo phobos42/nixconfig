@@ -8,6 +8,10 @@
     #   url = "github:phobos42/nixinate";
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -25,11 +29,12 @@
       nixpkgs,
       nixos-hardware,
       utils,
+      sops-nix,
       ...
     }@inputs:
-    let 
-    system = "aarch64-darwin";
-    pkgs = import nixpkgs {
+    let
+      system = "aarch64-darwin";
+      pkgs = import nixpkgs {
         inherit system;
         # config.allowUnfree = true;
       };
@@ -42,6 +47,7 @@
           modules = [
             utils.nixosModules.autoGenFromInputs
             ./hosts/Kraken/configuration.nix
+            sops-nix.nixosModules.sops
             #home-manager.nixosModules.home-manager
           ];
           specialArgs = {
@@ -53,6 +59,7 @@
           modules = [
             utils.nixosModules.autoGenFromInputs
             ./hosts/BangBox/configuration.nix
+            sops-nix.nixosModules.sops
           ];
           specialArgs = {
             inherit inputs;
@@ -69,12 +76,12 @@
             nixpkgs = pkgs;
             specialArgs = {
               inherit inputs;
-            };            
+            };
             nodeNixpkgs = builtins.mapAttrs (name: value: value.pkgs) configs;
             nodeSpecialArgs = builtins.mapAttrs (name: value: value._module.specialArgs) configs;
           };
-        } // builtins.mapAttrs
-        (name: value: {
+        }
+        // builtins.mapAttrs (name: value: {
           deployment = {
             targetHost = name;
             targetUser = "deploy";
@@ -83,7 +90,6 @@
             allowLocalDeployment = false;
           };
           imports = value._module.args.modules;
-        })
-        configs;
+        }) configs;
     };
 }

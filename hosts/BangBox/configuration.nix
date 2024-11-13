@@ -7,11 +7,12 @@
 {
   imports = with inputs.self.nixosModules; [
     ./hardware-configuration.nix
-    ./config/tailscale.nix
     ./config/traefik-config.nix
     ./config/zwavejs.nix
+    ./config/sops.nix
     users-box
     users-deploy
+    mixins-tailscale
     mixins-openssh
     mixins-common
     mixins-nm
@@ -51,6 +52,8 @@
       ];
     };
   };
+
+  services.tailscale.extraUpFlags = [ "--advertise-routes=192.168.1.0/24" ];
 
   # Set your time zone.
   time.timeZone = "America/Chicago";
