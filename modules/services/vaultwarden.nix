@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, ... }:
 let
   BaseDirectory = "/tank/shack/cloud/vaultwarden/";
   DataDirectory = "data";
@@ -8,7 +8,7 @@ in
 {
   services.vaultwarden = {
     enable = true;
-    environmentFile = "/var/vaultwarden-admin";
+    environmentFile = "${config.sops.secrets.vaultwarden.path}";
     backupDir = "${BaseDirectory}${BackupDirectory}";
     config = {
       DOMAIN = "https://vaultwarden.tailnethome.garrettruffner.com";
@@ -29,4 +29,11 @@ in
       };
     }
   ];
+  sops.secrets = {
+    vaultwarden = {
+      sopsFile = ./vaultwarden.env;
+      format = "dotenv";
+      restartUnits = [ "vaultwarden" ];
+    };
+  };
 }
