@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     # nixinate = {
     #   url = "github:phobos42/nixinate";
@@ -27,16 +28,16 @@
       # nixinate,
       home-manager,
       nixpkgs,
+      nixpkgs-unstable,
       nixos-hardware,
       utils,
       sops-nix,
       ...
     }@inputs:
     let
-      system = "aarch64-darwin";
-      pkgs = import nixpkgs {
-        inherit system;
-        # config.allowUnfree = true;
+      pkgs-unstable = import nixpkgs-unstable {
+        system = "x86_64-linux";
+        config.allowUnfree = true;
       };
     in
     {
@@ -52,6 +53,7 @@
           ];
           specialArgs = {
             inherit inputs;
+            inherit pkgs-unstable;
           };
         };
         BangBox = nixpkgs.lib.nixosSystem {
@@ -63,6 +65,7 @@
           ];
           specialArgs = {
             inherit inputs;
+            inherit pkgs-unstable;
           };
         };
       };
@@ -73,7 +76,9 @@
         in
         {
           meta = {
-            nixpkgs = pkgs;
+            nixpkgs = import nixpkgs {
+              system = "x86_64-linux";
+            };
             specialArgs = {
               inherit inputs;
             };

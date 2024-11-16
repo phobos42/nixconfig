@@ -1,9 +1,10 @@
-{ ... }:
+{ pkgs-unstable, ... }:
 let
   portNumber = 11434;
 in
 {
   services.ollama = {
+    package = pkgs-unstable.ollama;
     enable = true;
     listenAddress = "127.0.0.1:${toString portNumber}";
     home = "/ollama";
