@@ -15,4 +15,24 @@
       mode = "0444";
     };
   };
+
+  systemd.timers."restart-zwavejs" = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "*-*-* 3:00:00";
+      Persistent = true;
+      Unit = "restart-zwavejs.service";
+    };
+  };
+
+  systemd.services."restart-zwavejs" = {
+    script = ''
+      set -eu
+      systemctl restart zwave-js.service
+    '';
+    serviceConfig = {
+      Type = "oneshot";
+      User = "root";
+    };
+  };
 }
