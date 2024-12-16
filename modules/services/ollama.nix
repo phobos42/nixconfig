@@ -6,11 +6,12 @@ in
   services.ollama = {
     package = pkgs-unstable.ollama;
     enable = true;
-    listenAddress = "127.0.0.1:${toString portNumber}";
+    # listenAddress = "127.0.0.1:${toString portNumber}";
+    port = portNumber;
     home = "/ollama";
     models = "/ollama";
-    writablePaths = [ "/ollama" ];
-    sandbox = true;
+    # writablePaths = [ "/ollama" ];
+    # sandbox = true;
     acceleration = "cuda";
   };
   services.traefik-wrapper.service-definitions = builtins.listToAttrs [

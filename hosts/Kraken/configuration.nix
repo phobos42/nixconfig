@@ -27,7 +27,7 @@
     services-deluge
     services-radarr
     services-jackett
-    services-sonarr    
+    services-sonarr
     services-syncthing
     services-vaultwarden
     services-ollama
@@ -57,12 +57,21 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  services.xserver.videoDrivers = [ "nvidia" "amdgpu" ];
+  services.xserver.videoDrivers = [
+    "nvidia"
+    "amdgpu"
+  ];
   hardware.opengl = {
     enable = true;
-    driSupport = true;
+    # driSupport = true;
     driSupport32Bit = true;
   };
+
+  nixpkgs.config.permittedInsecurePackages = [
+    "dotnet-sdk-6.0.428"
+    "aspnetcore-runtime-6.0.36"
+  ];
+
   hardware.nvidia = {
     # Modesetting is required.
     modesetting.enable = true;

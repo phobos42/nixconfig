@@ -3,7 +3,7 @@
   networking.hostId = "915bb6c9";
   services.zfs.autoScrub.enable = true;
   boot = {
-    kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
+    # kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
     supportedFilesystems = [ "zfs" ];
   };
 }

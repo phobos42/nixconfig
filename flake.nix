@@ -2,7 +2,7 @@
   description = "Phobos NixOS Config";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     # nixinate = {
@@ -78,6 +78,9 @@
           meta = {
             nixpkgs = import nixpkgs {
               system = "x86_64-linux";
+              config = {
+                permittedInsecurePackages = [ "dotnet-sdk-6.0.428" ];
+              };
             };
             specialArgs = {
               inherit inputs;
