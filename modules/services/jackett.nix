@@ -1,9 +1,10 @@
-{ ... }:
+{ pkgs-unstable, ... }:
 let
   portNumber = 9117;
 in
 {
   services.jackett = {
+    package = pkgs-unstable.jackett;
     enable = true;
   };
 
@@ -15,4 +16,10 @@ in
       };
     }
   ];
+  services.flaresolverr = {
+    enable = true;
+    
+  };
 }
+
+
