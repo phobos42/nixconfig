@@ -1,9 +1,10 @@
-{ ... }:
+{ pkgs-unstable, ... }:
 let
   portNumber = 9090;
 in
 {
   services.cockpit = {
+    package = pkgs-unstable.cockpit;
     enable = true;
     port = portNumber;
     settings = {

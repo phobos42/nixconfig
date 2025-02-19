@@ -52,6 +52,12 @@
       ];
     };
   };
+  
+  nix.gc = {
+		automatic = true;
+		dates = "weekly";
+		options = "--delete-older-than 30d";
+	};
 
   services.tailscale.extraUpFlags = [ "--advertise-routes=192.168.1.0/24" ];
 
