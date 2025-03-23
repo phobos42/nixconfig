@@ -9,14 +9,6 @@
         "home2"
         "tailnethome2"
       ];
-      service-definitions = builtins.listToAttrs [
-        {
-          name = "homeassistant";
-          value = {
-            url = "http://192.168.1.102:8123";
-          };
-        }
-      ];
     };
   };
 }

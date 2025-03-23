@@ -18,9 +18,9 @@ in
   };
   services.traefik-wrapper.service-definitions = builtins.listToAttrs [
     {
-      name = "vaultwarden";
+      name = "homeassistant";
       value = {
-        url = "http://127.0.0.1:${toString portNumber}";
+        url = "http://192.168.1.102:${toString portNumber}";
       };
     }
   ];
