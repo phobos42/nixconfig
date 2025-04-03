@@ -20,7 +20,7 @@
     profiles-libvirtd
     profiles-docker
     containers-pihole
-    containers-homeassistant
+    services-homeassistant
     usermodules-default
   ];
   # _module.args = {
