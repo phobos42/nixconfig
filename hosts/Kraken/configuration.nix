@@ -32,6 +32,7 @@
     services-vaultwarden
     # services-ollama
     # services-openwebui
+    services-immich
     monitoring-scrutiny
     monitoring-udisks2
     monitoring-homarr
