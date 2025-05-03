@@ -23,6 +23,7 @@ in {
       "caldav"
       "jellyfin"
       "prometheus"
+      "ipp"
     ];
     extraPackages = python312Packages: with python312Packages; [
       zha
@@ -36,6 +37,7 @@ in {
       icalendar
       jellyfin-apiclient-python
       prometheus-client
+      pyipp
     ];
 
     configWritable = true;
@@ -58,8 +60,14 @@ in {
     };
     customComponents = [
 
-    ];
-    
+    ];    
+  };
+  services.tlp = {
+    enable = true;
+    settings = {
+      # RUNTIME_PM_DISABLE="00:14.0";
+      USB_DENYLIST="1a86:55d4";
+    };
   };
   services.traefik-wrapper.service-definitions = builtins.listToAttrs [{
       name = "homeassistant";
