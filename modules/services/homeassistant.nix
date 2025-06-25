@@ -24,6 +24,7 @@ in {
       "jellyfin"
       "prometheus"
       "ipp"
+      "mqtt"
     ];
     extraPackages = python312Packages: with python312Packages; [
       zha
@@ -38,6 +39,28 @@ in {
       jellyfin-apiclient-python
       prometheus-client
       pyipp
+      paho-mqtt
+      aiohasupervisor
+      aioesphomeapi
+      #aiousbwatcher
+      bleak
+      bleak-esphome
+      bleak-retry-connector
+      bluetooth-adapters
+      bluetooth-auto-recovery
+      bluetooth-data-tools
+      dbus-fast
+      esphome-dashboard-api
+      ha-ffmpeg
+      habluetooth
+      hassil
+      home-assistant-intents
+      ifaddr
+      mutagen
+      pymicro-vad
+      pyserial
+      pyspeex-noise
+      zeroconf
     ];
 
     configWritable = true;
