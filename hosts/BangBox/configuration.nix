@@ -21,6 +21,8 @@
     profiles-docker
     containers-pihole
     services-homeassistant
+    services-mosquitto
+    services-esphome
     usermodules-default
   ];
   # _module.args = {
