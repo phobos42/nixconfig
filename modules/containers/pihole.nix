@@ -38,7 +38,7 @@ in
     restartUnits = [ "docker-pihole.service" ];
   };
 }
-# Origin container definition:
+# Original container definition:
 #
 # services:
 #   pihole:
