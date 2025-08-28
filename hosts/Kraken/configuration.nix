@@ -41,6 +41,12 @@
     monitoring-prometheusServer
     usermodules-default
     monitoring-grafana
+    #Migration
+    containers-pihole
+    services-homeassistant
+    services-mosquitto
+    services-esphome
+    ./config/zwavejs.nix
   ];
 
   # _module.args = {

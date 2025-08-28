@@ -5,7 +5,7 @@ in {
   services.mosquitto = {
     enable = true;
     listeners = [{
-      address = "mqtt.home2.garrettruffner.com";
+      address = "mqtt.home.garrettruffner.com";
       port = portNumber;
       users.root = {
         acl = [ "readwrite #" ];

@@ -7,3 +7,5 @@ Deploy a flake configuration to a remote host using colmena.
 
 ### Update
 `nix flake update`
+
+## Sops
