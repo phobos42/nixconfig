@@ -1,16 +1,16 @@
-{ pkgs-unstable, ... }:
-let portNumber = 9090;
+{ pkgs-unstable, config, ... }:
+let
+  portNumber = 9090;
+  cfg = config.services.traefik-wrapper;
 in {
   services.cockpit = {
     package = pkgs-unstable.cockpit;
     enable = true;
     port = portNumber;
-    settings = {
-      "WebService" = {
-        Origins =
-          "https://cockpit.home.garrettruffner.com https://cockpit.tailnethome.garrettruffner.com";
-      };
-    };
+    allowed-origins = 
+      builtins.map (subdomain:
+        ''https://cockpit.${subdomain}.${cfg.base-domain}'')
+        cfg.domain-subnets;
   };
   services.traefik-wrapper.service-definitions = builtins.listToAttrs [{
     name = "cockpit";
