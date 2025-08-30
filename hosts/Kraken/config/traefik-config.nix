@@ -6,10 +6,10 @@
       enable = true;
       base-domain = "garrettruffner.com";
       domain-subnets = [
-        "home"
-        "home2"
+        # "home"
+        # "home2"
         "tailnethome"
-        "tailnethome2"
+        # "tailnethome2"
       ];
       # service-definitions = builtins.listToAttrs [
       #   {

@@ -10,7 +10,7 @@
     ./hardware-configuration.nix
     ./disks.nix
     ./config/traefik-config.nix
-    ./config/pia-config.nix
+    # ./config/pia-config.nix
     ./config/sops.nix
     users-box
     users-deploy

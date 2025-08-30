@@ -9,9 +9,9 @@ let
   apivalue = builtins.listToAttrs [{
     name = "api";
     value = {
-      rule = lib.strings.concatStringsSep " || " (builtins.map (subdomain:
-        ''Host(`${subdomain}.${cfg.base-domain}`)'')
-        cfg.domain-subnets);
+      rule = lib.strings.concatStringsSep " || "
+        (builtins.map (subdomain: "Host(`${subdomain}.${cfg.base-domain}`)")
+          cfg.domain-subnets);
       service = "api@internal";
       entryPoints = [ "websecure" ];
       tls = {
@@ -23,20 +23,31 @@ let
   secureServiceValues = builtins.listToAttrs (builtins.map (nameVal: {
     name = "${nameVal}";
     value = {
+      # rule = lib.strings.concatStringsSep " || " (builtins.map (subdomain:
+      #   ''Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)'')
+      #   cfg.domain-subnets);
       rule = lib.strings.concatStringsSep " || " (builtins.map (subdomain:
-        ''Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)'')
+        "Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)")
         cfg.domain-subnets);
+      # rule = "HostRegexp(`${nameVal}\.([A-Za-z0-9]+)\.${cfg.base-domain}`)";
       entryPoints = [ "websecure" ];
       service = "${nameVal}";
       tls = {
         certResolver = "letsencrypt";
-        domains = active-domains;
+      #   domains = builtins.map (name:
+      #   ''
+      #   { main="${name}.${cfg.base-domain}";sans="${nameVal}.${name}.${cfg.base-domain}";}'')
+      # cfg.domain-subnets;
+      domains = active-domains;
       };
     };
   }) (builtins.attrNames cfg.service-definitions));
   insecureServiceValues = builtins.listToAttrs (builtins.map (nameVal: {
     name = "${nameVal}-insecure";
     value = {
+      # rule = lib.strings.concatStringsSep " || " (builtins.map (subdomain:
+      #   "HostRegexp(`${nameVal}\.${subdomain}\.${cfg.base-domain}`)")
+      #   cfg.domain-subnets);
       rule = lib.strings.concatStringsSep " || " (builtins.map (subdomain:
         ''Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)'')
         cfg.domain-subnets);
@@ -118,7 +129,7 @@ in with lib; {
         };
         api = {
           dashboard = true;
-          debug = true;
+          debug = false;
         };
         log = {
           level = "DEBUG";
@@ -126,19 +137,8 @@ in with lib; {
           format = "json";
         };
         entryPoints = {
-          websecure = {
-            address = ":443";
-            asDefault = true;
-            http.tls.certResolver = "letsencrypt";
-          };
-          web = {
-            address = ":80";
-            asDefault = true;
-             http.redirections.entrypoint = {
-            to = "websecure";
-            scheme = "https";
-          };
-          };
+          websecure = { address = ":443"; };
+          web = { address = ":80"; };
         };
 
         certificatesResolvers = {
@@ -147,7 +147,7 @@ in with lib; {
             storage = "${config.services.traefik.dataDir}/acme.json";
             dnsChallenge = {
               provider = "route53";
-              delayBeforeCheck = 0;
+              delayBeforeCheck = 60;
               resolvers = [ "1.1.1.1:53" ];
             };
           };
