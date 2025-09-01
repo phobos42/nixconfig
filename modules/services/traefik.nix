@@ -23,33 +23,23 @@ let
   secureServiceValues = builtins.listToAttrs (builtins.map (nameVal: {
     name = "${nameVal}";
     value = {
-      # rule = lib.strings.concatStringsSep " || " (builtins.map (subdomain:
-      #   ''Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)'')
-      #   cfg.domain-subnets);
-      rule = lib.strings.concatStringsSep " || " (builtins.map (subdomain:
-        "Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)")
+      rule = lib.strings.concatStringsSep " || " (builtins.map
+        (subdomain: "Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)")
         cfg.domain-subnets);
       # rule = "HostRegexp(`${nameVal}\.([A-Za-z0-9]+)\.${cfg.base-domain}`)";
       entryPoints = [ "websecure" ];
       service = "${nameVal}";
       tls = {
         certResolver = "letsencrypt";
-      #   domains = builtins.map (name:
-      #   ''
-      #   { main="${name}.${cfg.base-domain}";sans="${nameVal}.${name}.${cfg.base-domain}";}'')
-      # cfg.domain-subnets;
-      domains = active-domains;
+        domains = active-domains;
       };
     };
   }) (builtins.attrNames cfg.service-definitions));
   insecureServiceValues = builtins.listToAttrs (builtins.map (nameVal: {
     name = "${nameVal}-insecure";
     value = {
-      # rule = lib.strings.concatStringsSep " || " (builtins.map (subdomain:
-      #   "HostRegexp(`${nameVal}\.${subdomain}\.${cfg.base-domain}`)")
-      #   cfg.domain-subnets);
-      rule = lib.strings.concatStringsSep " || " (builtins.map (subdomain:
-        ''Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)'')
+      rule = lib.strings.concatStringsSep " || " (builtins.map
+        (subdomain: "Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)")
         cfg.domain-subnets);
       entryPoints = [ "web" ];
       service = "${nameVal}";
