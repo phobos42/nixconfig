@@ -16,6 +16,7 @@ in
         #   ${pkgs.transmission}/bin/transmission-remote --port $port || true
         # '';
       };
+      maxLatency = 0.5;
     };
   };
   sops.secrets = {

@@ -10,7 +10,7 @@
     ./hardware-configuration.nix
     ./disks.nix
     ./config/traefik-config.nix
-    # ./config/pia-config.nix
+    ./config/pia-config.nix
     ./config/sops.nix
     users-box
     users-deploy
@@ -58,6 +58,7 @@
   #     hermetic = false;
   #   };
   # };
+  # nixpkgs.config.allowUnsupportedSystem = true; 
 
   # Use the systemd-boot EFI boot loader.
   boot.initrd.kernelModules = [ "amdgpu" ]; #"nvidia" ];
