@@ -2,7 +2,6 @@
   description = "Phobos NixOS Config";
 
   inputs = {
-    # nixpkgs-2411.url = "github:nixos/nixpkgs/nixos-24.11";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:nixos/nixos-hardware";
@@ -34,10 +33,6 @@
         system = "x86_64-linux";
         config.allowUnfree = true;
       };
-      # nixpkgs-2411 = import nixpkgs-2411 {
-      #   system = "x86_64-linux";
-      #   config.allowUnfree = true;
-      # };
       targetHosts = {
         Kraken = {
           hostname = "kraken.kamori-hops.ts.net";
@@ -65,7 +60,6 @@
           specialArgs = {
             inherit inputs;
             inherit pkgs-unstable;
-            # inherit nixpkgs-2411;
           };
         };
         Perdido = nixpkgs.lib.nixosSystem {
@@ -79,7 +73,6 @@
           specialArgs = {
             inherit inputs;
             inherit pkgs-unstable;
-            # inherit nixpkgs-2411;
           };
         };
         # BangBox = nixpkgs.lib.nixosSystem {
