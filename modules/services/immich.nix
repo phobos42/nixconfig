@@ -1,9 +1,10 @@
-{ pkgs-unstable, ... }:
+{ pkgs, ... }:
 let
   portNumber = 2283;
 in
 {
   services.immich = {
+    package = pkgs.immich;
     user = "immich";
     group = "immich";
     enable = true;

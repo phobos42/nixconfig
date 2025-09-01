@@ -1,69 +1,62 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ config, lib, pkgs, pkgs-unstable, ... }:
 let
   cfg = config.services.traefik-wrapper;
-  active-domains = builtins.map (
-    name: "{ main=\"${name}.${cfg.base-domain}\";sans=\"*.${name}.${cfg.base-domain}\";}"
-  ) cfg.domain-subnets;
+  active-domains = builtins.map (name:
+    ''
+      { main="${name}.${cfg.base-domain}";sans="*.${name}.${cfg.base-domain}";}'')
+    cfg.domain-subnets;
 
-  apivalue = builtins.listToAttrs [
-    {
-      name = "api";
-      value = {
-        rule = "HostRegexp(`traefik\.([A-Za-z0-9]+)\.${cfg.base-domain}`)";
-        service = "api@internal";
-        entryPoints = [ "websecure" ];
-        tls = {
-          certResolver = "letsencrypt";
-          domains = active-domains;
-        };
+  apivalue = builtins.listToAttrs [{
+    name = "api";
+    value = {
+      rule = lib.strings.concatStringsSep " || "
+        (builtins.map (subdomain: "Host(`${subdomain}.${cfg.base-domain}`)")
+          cfg.domain-subnets);
+      service = "api@internal";
+      entryPoints = [ "websecure" ];
+      tls = {
+        certResolver = "letsencrypt";
+        domains = active-domains;
       };
-    }
-  ];
-  secureServiceValues = builtins.listToAttrs (
-    builtins.map (nameVal: {
-      name = "${nameVal}";
-      value = {
-        rule = "HostRegexp(`${nameVal}\.([A-Za-z0-9]+)\.${cfg.base-domain}`)";
-        entryPoints = [ "websecure" ];
-        service = "${nameVal}";
-        tls = {
-          certResolver = "letsencrypt";
-          domains = active-domains;
-        };
-      };
-    }) (builtins.attrNames cfg.service-definitions)
-  );
-  insecureServiceValues = builtins.listToAttrs (
-    builtins.map (nameVal: {
-      name = "${nameVal}-insecure";
-      value = {
-        rule = "HostRegexp(`${nameVal}\.([A-Za-z0-9]+)\.${cfg.base-domain}`)";
-        entryPoints = [ "web" ];
-        service = "${nameVal}";
-        middlewares = "redirect-to-https";
-      };
-    }) (builtins.attrNames cfg.service-definitions)
-  );
-
-  serviceMapping = builtins.mapAttrs (name: value: {
-    loadBalancer = {
-      servers = [ { url = value.url; } ];
     };
-  }) cfg.service-definitions;
+  }];
+  secureServiceValues = builtins.listToAttrs (builtins.map (nameVal: {
+    name = "${nameVal}";
+    value = {
+      rule = lib.strings.concatStringsSep " || " (builtins.map
+        (subdomain: "Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)")
+        cfg.domain-subnets);
+      # rule = "HostRegexp(`${nameVal}\.([A-Za-z0-9]+)\.${cfg.base-domain}`)";
+      entryPoints = [ "websecure" ];
+      service = "${nameVal}";
+      tls = {
+        certResolver = "letsencrypt";
+        domains = active-domains;
+      };
+    };
+  }) (builtins.attrNames cfg.service-definitions));
+  insecureServiceValues = builtins.listToAttrs (builtins.map (nameVal: {
+    name = "${nameVal}-insecure";
+    value = {
+      rule = lib.strings.concatStringsSep " || " (builtins.map
+        (subdomain: "Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)")
+        cfg.domain-subnets);
+      entryPoints = [ "web" ];
+      service = "${nameVal}";
+      middlewares = "redirect-to-https";
+    };
+  }) (builtins.attrNames cfg.service-definitions));
 
-in
-with lib;
-{
+  serviceMapping = builtins.mapAttrs
+    (name: value: { loadBalancer = { servers = [{ url = value.url; }]; }; })
+    cfg.service-definitions;
+
+in with lib; {
   options.services.traefik-wrapper = {
     enable = mkEnableOption "Traefik Config Wrapper";
     base-domain = mkOption {
       type = types.str;
-      description = ''base domain in the format: XXXX.com'';
+      description = "base domain in the format: XXXX.com";
     };
     domain-subnets = mkOption {
       type = types.listOf types.str;
@@ -83,32 +76,27 @@ with lib;
         }
       '';
     };
-
   };
   config = mkIf cfg.enable {
-    
+
     sops.secrets.traefik = {
       sopsFile = ./traefikKey.env;
       format = "dotenv";
       restartUnits = [ "traefik.service" ];
     };
 
-    networking.firewall.allowedTCPPorts = [
-      80
-      443
-    ];
+    networking.firewall.allowedTCPPorts = [ 80 443 ];
 
     systemd.services.traefik = {
-      environment = {
-        CF_API_EMAIL = "garrettruffner42@gmail.com";
-      };
       serviceConfig = {
-        EnvironmentFile = [ "${config.sops.secrets.traefik.path}" ];
+        EnvironmentFile = "${config.sops.secrets.traefik.path}";
       };
     };
 
     services.traefik = {
+      package = pkgs-unstable.traefik;
       enable = true;
+      environmentFiles = [ "${config.sops.secrets.traefik.path}" ];
 
       dynamicConfigOptions = {
         http.middlewares = {
@@ -119,11 +107,8 @@ with lib;
         };
         http = {
           services = serviceMapping;
-          routers = lib.mkMerge [
-            secureServiceValues
-            insecureServiceValues
-            apivalue
-          ];
+          routers =
+            lib.mkMerge [ secureServiceValues insecureServiceValues apivalue ];
         };
       };
 
@@ -133,18 +118,23 @@ with lib;
           sendAnonymousUsage = false;
         };
         api = {
-          insecure = true;
           dashboard = true;
-          debug = true;
+          debug = false;
         };
-
-        entryPoints.websecure.address = ":443";
-        entryPoints.web.address = ":80";
+        log = {
+          level = "DEBUG";
+          filePath = "${config.services.traefik.dataDir}/traefik.log";
+          format = "json";
+        };
+        entryPoints = {
+          websecure = { address = ":443"; };
+          web = { address = ":80"; };
+        };
 
         certificatesResolvers = {
           letsencrypt.acme = {
             email = "garrettruffner42@gmail.com";
-            storage = "/var/lib/traefik/cert.json";
+            storage = "${config.services.traefik.dataDir}/acme.json";
             dnsChallenge = {
               provider = "route53";
               delayBeforeCheck = 60;
