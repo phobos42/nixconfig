@@ -12,11 +12,11 @@
     ./config/traefik-config.nix
     ./config/pia-config.nix
     ./config/sops.nix
+    ./config/networkconfig.nix
     users-box
     users-deploy
     mixins-openssh
     mixins-common
-    mixins-nm
     mixins-tlp
     mixins-tailscale
     profiles-docker
@@ -126,22 +126,6 @@
 		dates = "weekly";
 		options = "--delete-older-than 30d";
 	};
-
-  networking = {
-    hostName = "Kraken";
-    defaultGateway = {
-      interface = "enp3s0";
-    };
-    interfaces.enp3s0 = {
-      useDHCP = false;
-      ipv4.addresses = [
-        {
-          address = "192.168.1.101";
-          prefixLength = 24;
-        }
-      ];
-    };
-  };
 
   time.timeZone = "America/Chicago";
   # Select internationalisation properties.
