@@ -8,6 +8,7 @@
     ./config/sops.nix
     ./config/traefik-config.nix
     ./config/networkconfig.nix
+    ./config/scrutiny.nix
     users-box
     users-deploy
     usermodules-default
@@ -15,6 +16,7 @@
     mixins-common
     mixins-tlp
     mixins-tailscale
+    profiles-docker
     profiles-zfs
     monitoring-cockpit
   ];
