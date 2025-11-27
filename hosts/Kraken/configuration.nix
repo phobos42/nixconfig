@@ -1,10 +1,4 @@
-{
-  config,
-  pkgs,
-  inputs,
-  ...
-}:
-{
+{ config, pkgs, inputs, ... }: {
   nixpkgs.config.allowUnfree = true;
   imports = with inputs.self.nixosModules; [
     ./hardware-configuration.nix
@@ -33,6 +27,7 @@
     # services-ollama
     # services-openwebui
     services-immich
+    services-zfs-replication
     monitoring-scrutiny
     monitoring-udisks2
     monitoring-homarr
@@ -49,6 +44,28 @@
     ./config/zwavejs.nix
   ];
 
+  # Data Backups
+  services.zfs.autoSnapshot.flags = "-k -p --utc";
+  services.zfs.autoSnapshot.enable = true;
+  services.zfs.autoSnapshot.daily = 30;
+
+  # ZFS Replication to remote host (runs 1 hour after snapshots are created)
+  services.zfs-replication = {
+    enable = true;
+    remoteUser = "box";
+    remoteHost = "perdido.kamori-hops.ts.net";  # Update with your remote host IP/hostname
+    remotePool = "tank";
+    datasets = [
+      "tank/services"
+      "tank/shack/cloud/immich"
+      "tank/shack/cloud/nextcloud"
+      "tank/shack/cloud/syncthing"
+      "tank/shack/cloud/vaultwarden"
+    ];
+    schedule = "04:00";  # 4 AM (1 hour after snapshots at 3 AM)
+    user = "root";
+  };
+
   # _module.args = {
   #   nixinate = {
   #     host = "192.168.1.101";
@@ -61,7 +78,7 @@
   # nixpkgs.config.allowUnsupportedSystem = true; 
 
   # Use the systemd-boot EFI boot loader.
-  boot.initrd.kernelModules = [ "amdgpu" ]; #"nvidia" ];
+  boot.initrd.kernelModules = [ "amdgpu" ]; # "nvidia" ];
   # boot.extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -76,10 +93,8 @@
     driSupport32Bit = true;
   };
 
-  nixpkgs.config.permittedInsecurePackages = [
-    "dotnet-sdk-6.0.428"
-    "aspnetcore-runtime-6.0.36"
-  ];
+  nixpkgs.config.permittedInsecurePackages =
+    [ "dotnet-sdk-6.0.428" "aspnetcore-runtime-6.0.36" ];
 
   # hardware.nvidia = {
   #   # Modesetting is required.
@@ -122,10 +137,10 @@
   # };
 
   nix.gc = {
-		automatic = true;
-		dates = "weekly";
-		options = "--delete-older-than 30d";
-	};
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
 
   time.timeZone = "America/Chicago";
   # Select internationalisation properties.
