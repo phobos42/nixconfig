@@ -19,7 +19,7 @@
     profiles-docker
     profiles-zfs
     monitoring-cockpit
-    # services-vaultwarden
+    services-vaultwardenbackup
   ];
 
   boot.loader.systemd-boot.enable = true;

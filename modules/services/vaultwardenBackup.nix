@@ -11,7 +11,7 @@ in
     environmentFile = "${config.sops.secrets.vaultwarden.path}";
     backupDir = "${BaseDirectory}${BackupDirectory}";
     config = {
-      DOMAIN = "https://vaultwarden.perdido.kamori-hops.ts.net";
+      DOMAIN = "https://vaultwarden.perdido.garrettruffner.com";
       SIGNUPS_ALLOWED = true;
       ROCKET_ADDRESS = "127.0.0.1";
       ROCKET_PORT = portNumber;
