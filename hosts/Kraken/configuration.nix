@@ -1,10 +1,4 @@
-{
-  config,
-  pkgs,
-  inputs,
-  ...
-}:
-{
+{ config, pkgs, inputs, ... }: {
   nixpkgs.config.allowUnfree = true;
   imports = with inputs.self.nixosModules; [
     ./hardware-configuration.nix
@@ -49,6 +43,16 @@
     ./config/zwavejs.nix
   ];
 
+  # Data Backups
+  services.zfs.autoSnapshot.flags = "-k -p --utc";
+  services.zfs.autoSnapshot.enable = true;
+  services.zfs.autoSnapshot.daily = 30;
+  services.zfs.autoSnapshot.schedules = {
+    custom = {
+      # Define a cron-like schedule
+      schedule = "0 3 * * *"; # This means every day at 3 AM
+    };
+  };
   # _module.args = {
   #   nixinate = {
   #     host = "192.168.1.101";
@@ -61,7 +65,7 @@
   # nixpkgs.config.allowUnsupportedSystem = true; 
 
   # Use the systemd-boot EFI boot loader.
-  boot.initrd.kernelModules = [ "amdgpu" ]; #"nvidia" ];
+  boot.initrd.kernelModules = [ "amdgpu" ]; # "nvidia" ];
   # boot.extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -76,10 +80,8 @@
     driSupport32Bit = true;
   };
 
-  nixpkgs.config.permittedInsecurePackages = [
-    "dotnet-sdk-6.0.428"
-    "aspnetcore-runtime-6.0.36"
-  ];
+  nixpkgs.config.permittedInsecurePackages =
+    [ "dotnet-sdk-6.0.428" "aspnetcore-runtime-6.0.36" ];
 
   # hardware.nvidia = {
   #   # Modesetting is required.
@@ -122,10 +124,10 @@
   # };
 
   nix.gc = {
-		automatic = true;
-		dates = "weekly";
-		options = "--delete-older-than 30d";
-	};
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
 
   time.timeZone = "America/Chicago";
   # Select internationalisation properties.
