@@ -94,7 +94,6 @@
         meta = {
           nixpkgs = import nixpkgs {
             system = "x86_64-linux";
-            config = { permittedInsecurePackages = [ "dotnet-sdk-6.0.428" ]; };
           };
           specialArgs = { inherit inputs; };
           nodeNixpkgs = builtins.mapAttrs (name: value: value.pkgs) configs;
