@@ -27,6 +27,7 @@
     # services-ollama
     # services-openwebui
     services-immich
+    services-zfs-replication
     monitoring-scrutiny
     monitoring-udisks2
     monitoring-homarr
@@ -47,12 +48,24 @@
   services.zfs.autoSnapshot.flags = "-k -p --utc";
   services.zfs.autoSnapshot.enable = true;
   services.zfs.autoSnapshot.daily = 30;
-  services.zfs.autoSnapshot.schedules = {
-    custom = {
-      # Define a cron-like schedule
-      schedule = "0 3 * * *"; # This means every day at 3 AM
-    };
+
+  # ZFS Replication to remote host (runs 1 hour after snapshots are created)
+  services.zfs-replication = {
+    enable = true;
+    remoteUser = "box";
+    remoteHost = "perdido.kamori-hops.ts.net";  # Update with your remote host IP/hostname
+    remotePool = "tank";
+    datasets = [
+      "tank/services"
+      "tank/shack/cloud/immich"
+      "tank/shack/cloud/nextcloud"
+      "tank/shack/cloud/syncthing"
+      "tank/shack/cloud/vaultwarden"
+    ];
+    schedule = "04:00";  # 4 AM (1 hour after snapshots at 3 AM)
+    user = "root";
   };
+
   # _module.args = {
   #   nixinate = {
   #     host = "192.168.1.101";
