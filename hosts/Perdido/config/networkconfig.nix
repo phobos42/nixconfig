@@ -40,6 +40,34 @@ let
         psk = "$HOME_WIFI_PASSWORD";
       };
     };
+    offsite1-wifi = {
+      connection = {
+        id = "offsite1-wifi";
+        permissions = "";
+        interface-name = "wlp4s0";
+        type = "wifi";
+        autoconnect-priority = 50;
+      };
+      ipv4 = {
+        dns-search = "";
+        method = "auto";
+      };
+      ipv6 = {
+        addr-gen-mode = "stable-privacy";
+        dns-search = "";
+        method = "auto";
+      };
+      wifi = {
+        mac-address-blacklist = "";
+        mode = "infrastructure";
+        ssid = "$OFFSITE1_WIFI_SSID";
+      };
+      wifi-security = {
+        auth-alg = "open";
+        key-mgmt = "wpa-psk";
+        psk = "$OFFSITE1_WIFI_PASSWORD";
+      };
+    };
   };
 in {
   sops.secrets = {
