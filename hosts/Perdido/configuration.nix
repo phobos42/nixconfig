@@ -5,6 +5,7 @@
     (modulesPath + "/profiles/qemu-guest.nix")
     ./hardware-configuration.nix
     ./disk-config.nix
+    ./disks.nix
     ./config/sops.nix
     ./config/traefik-config.nix
     ./config/networkconfig.nix
@@ -19,7 +20,8 @@
     profiles-docker
     profiles-zfs
     monitoring-cockpit
-    # services-vaultwarden
+    services-vaultwardenbackuptest
+    services-immichdr
   ];
 
   boot.loader.systemd-boot.enable = true;

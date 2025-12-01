@@ -1,0 +1,4 @@
+{ ... }:
+{
+  boot.zfs.extraPools = [ "tank" ];
+}
