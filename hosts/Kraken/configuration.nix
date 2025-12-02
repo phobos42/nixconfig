@@ -28,6 +28,7 @@
     # services-openwebui
     services-immich
     services-zfs-replication
+    services-collabora
     monitoring-scrutiny
     monitoring-udisks2
     monitoring-homarr
