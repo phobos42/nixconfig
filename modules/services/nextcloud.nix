@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, config, ... }:
 let
   portNumber = 8081;
 in
@@ -45,6 +45,14 @@ in
       adminpassFile = "/tank/shack/cloud/nextcloud/nextcloud-admin-pass";
       adminuser = "admin";
 
+    };
+    appstoreEnable = true;
+    extraAppsEnable = true;
+    extraApps = with config.services.nextcloud.package.packages.apps; {
+      inherit
+        # ... other apps
+        richdocuments # Collabora Online for Nextcloud - https://apps.nextcloud.com/apps/richdocuments
+        ;
     };
   };
   services.postgresql = {
