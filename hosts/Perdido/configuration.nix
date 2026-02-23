@@ -22,6 +22,7 @@
     monitoring-cockpit
     services-vaultwardenbackuptest
     services-immichdr
+    ./config/zrepl-config.nix
   ];
 
   boot.loader.systemd-boot.enable = true;

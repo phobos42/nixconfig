@@ -43,6 +43,7 @@
     services-mosquitto
     services-esphome
     ./config/zwavejs.nix
+    ./config/zrepl-config.nix
   ];
 
   # Data Backups
@@ -52,7 +53,7 @@
 
   # ZFS Replication to remote host (runs 1 hour after snapshots are created)
   services.zfs-replication = {
-    enable = true;
+    enable = false;
     remoteUser = "box";
     remoteHost = "perdido.kamori-hops.ts.net";  # Update with your remote host IP/hostname
     remotePool = "tank";
