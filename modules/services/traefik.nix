@@ -77,6 +77,7 @@ in with lib; {
       '';
     };
   };
+
   config = mkIf cfg.enable {
 
     sops.secrets.traefik = {
@@ -85,7 +86,7 @@ in with lib; {
       restartUnits = [ "traefik.service" ];
     };
 
-    networking.firewall.allowedTCPPorts = [ 80 443 ];
+    networking.firewall.allowedTCPPorts = [ 80 443 8888 ];
 
     systemd.services.traefik = {
       serviceConfig = {

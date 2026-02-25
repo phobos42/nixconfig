@@ -21,12 +21,10 @@ let
         autoconnect-priority = 50;
       };
       ipv4 = {
-        dns-search = "";
         method = "auto";
       };
       ipv6 = {
         addr-gen-mode = "stable-privacy";
-        dns-search = "";
         method = "auto";
       };
       wifi = {
@@ -49,12 +47,10 @@ let
         autoconnect-priority = 50;
       };
       ipv4 = {
-        dns-search = "";
         method = "auto";
       };
       ipv6 = {
         addr-gen-mode = "stable-privacy";
-        dns-search = "";
         method = "auto";
       };
       wifi = {

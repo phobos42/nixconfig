@@ -27,7 +27,6 @@
     # services-ollama
     # services-openwebui
     services-immich
-    services-zfs-replication
     services-collabora
     monitoring-scrutiny
     monitoring-udisks2
@@ -37,35 +36,13 @@
     monitoring-prometheusServer
     usermodules-default
     monitoring-grafana
-    #Migration
     containers-pihole
     services-homeassistant
     services-mosquitto
     services-esphome
     ./config/zwavejs.nix
+    ./config/zrepl-config.nix
   ];
-
-  # Data Backups
-  services.zfs.autoSnapshot.flags = "-k -p --utc";
-  services.zfs.autoSnapshot.enable = true;
-  services.zfs.autoSnapshot.daily = 30;
-
-  # ZFS Replication to remote host (runs 1 hour after snapshots are created)
-  services.zfs-replication = {
-    enable = true;
-    remoteUser = "box";
-    remoteHost = "perdido.kamori-hops.ts.net";  # Update with your remote host IP/hostname
-    remotePool = "tank";
-    datasets = [
-      "tank/services"
-      "tank/shack/cloud/immich"
-      "tank/shack/cloud/nextcloud"
-      "tank/shack/cloud/syncthing"
-      "tank/shack/cloud/vaultwarden"
-    ];
-    schedule = "04:00";  # 4 AM (1 hour after snapshots at 3 AM)
-    user = "root";
-  };
 
   # _module.args = {
   #   nixinate = {
