@@ -20,7 +20,7 @@
     profiles-docker
     profiles-zfs
     monitoring-cockpit
-    services-vaultwardenbackuptest
+    # services-vaultwardenbackuptest
     services-immichdr
     ./config/zrepl-config.nix
   ];
