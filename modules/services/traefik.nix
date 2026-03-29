@@ -86,7 +86,10 @@ in with lib; {
       restartUnits = [ "traefik.service" ];
     };
 
-    networking.firewall.allowedTCPPorts = [ 80 443 8888 ];
+    networking.firewall = {
+      allowedTCPPorts = [ 80 443 8888 137 138 139 389 445 ];
+      allowedUDPPorts = [ 137 138 139 389 445 ];
+    };
 
     systemd.services.traefik = {
       serviceConfig = {
