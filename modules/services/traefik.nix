@@ -76,6 +76,17 @@ in with lib; {
         }
       '';
     };
+      udp-ports = mkOption {
+        type = types.listOf types.int;
+        default = [ ];
+        description = "List of UDP ports to open in the firewall.";
+      };
+      tcp-ports = mkOption {
+        type = types.listOf types.int;
+        default = [ 80 443 ];
+        description = "List of TCP ports to open in the firewall.";
+      };
+
   };
 
   config = mkIf cfg.enable {
@@ -87,8 +98,8 @@ in with lib; {
     };
 
     networking.firewall = {
-      allowedTCPPorts = [ 80 443 8888 137 138 139 389 445 ];
-      allowedUDPPorts = [ 137 138 139 389 445 ];
+      allowedTCPPorts = cfg.tcp-ports;
+      allowedUDPPorts = cfg.udp-ports;
     };
 
     systemd.services.traefik = {
