@@ -6,19 +6,10 @@
       enable = true;
       base-domain = "garrettruffner.com";
       domain-subnets = [
-        # "home"
-        # "home2"
         "tailnethome"
-        # "tailnethome2"
-      ];
-      # service-definitions = builtins.listToAttrs [
-      #   {
-      #     name = "craft";
-      #     value = {
-      #       url = "http://127.0.0.1:25565";
-      #     };
-      #   }        
-      # ];
+      ];     
+      tcp-ports = [ 80 443 8888 ];
+      udp-ports = [ ];    
     };
   };
 }
