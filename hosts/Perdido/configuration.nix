@@ -23,6 +23,7 @@
     # services-vaultwardenbackuptest
     services-immichdr
     ./config/zrepl-config.nix
+    ./config/smb.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
