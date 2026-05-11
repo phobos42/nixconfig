@@ -11,7 +11,7 @@ in
       certificateFile = "${config.sops.secrets.piacert.path}";
       environmentFile = "${config.sops.secrets.piaenv.path}";
       portForward = {
-        enable = true;
+        enable = false;
         # script = ''
         #   ${pkgs.transmission}/bin/transmission-remote --port $port || true
         # '';
