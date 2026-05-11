@@ -38,7 +38,7 @@
     monitoring-grafana
     containers-pihole
     services-homeassistant
-    # services-mosquitto
+    services-mosquitto
     services-esphome
     ./config/zwavejs.nix
     ./config/zrepl-config.nix
