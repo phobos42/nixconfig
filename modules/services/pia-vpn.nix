@@ -229,11 +229,15 @@ $time $regionID $serverIP"
         ${cfg.preUp}
 
         # Clean up any existing interface
+        ${pkgs.iproute2}/bin/ip route flush table 42 2>/dev/null || true
         ${pkgs.iproute2}/bin/ip link delete dev ${cfg.interface} 2>/dev/null || true
 
         # Create WireGuard interface directly
-        ${pkgs.iproute2}/bin/ip link add dev ${cfg.interface} type wireguard
-        
+        if ! ${pkgs.iproute2}/bin/ip link show ${cfg.interface} >/dev/null 2>&1; then
+          ${pkgs.iproute2}/bin/ip link add dev ${cfg.interface} type wireguard
+        fi
+
+
         # Configure WireGuard private key
         ${pkgs.wireguard-tools}/bin/wg set ${cfg.interface} \
           private-key <(echo "$privateKey") \
@@ -246,13 +250,13 @@ $time $regionID $serverIP"
           allowed-ips 0.0.0.0/0,::/0 \
           persistent-keepalive 25
         
-        # Assign IP address
-        ${pkgs.iproute2}/bin/ip addr add ''${peerip}/32 dev ${cfg.interface}
+        # Assign IP address (use replace to handle re-runs)
+        ${pkgs.iproute2}/bin/ip addr replace ''${peerip}/32 dev ${cfg.interface}
         
         # Bring up the interface
         ${pkgs.iproute2}/bin/ip link set up dev ${cfg.interface}
 
-        ${pkgs.iproute2}/bin/ip route add default dev ${cfg.interface} table 42
+        ${pkgs.iproute2}/bin/ip route replace default dev ${cfg.interface} table 42
 
         ${cfg.postUp}
       '';
