@@ -28,6 +28,7 @@ in {
       hostname = "Kraken";
       environmentFiles = [ ];
       profiles = config-profiles;
+      dns = [ "192.168.1.1" ];
     };
   };
 }

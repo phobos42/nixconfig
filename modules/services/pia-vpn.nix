@@ -39,7 +39,7 @@ with lib;
 
     maxLatency = mkOption {
       type = types.float;
-      default = 0.1;
+      default = 0.5;
       description = ''
         Maximum latency to allow for auto-selection of VPN server,
         in seconds.
@@ -94,13 +94,12 @@ with lib;
   config = mkIf cfg.enable {
     boot.kernelModules = [ "wireguard" ];
 
-    systemd.network.enable = true;
-
     systemd.services.pia-vpn = {
       description = "Connect to Private Internet Access on ${cfg.interface}";
       path = with pkgs; [ bash curl gawk jq wireguard-tools ];
       requires = [ "network-online.target" ];
-      after = [ "network.target" "network-online.target" ];
+      # after = [ "network.target" "network-online.target" ];
+      after = [ "network.target" "network-online.target" "systemd-resolved.service" ];
       wantedBy = [ "multi-user.target" ];
 
       unitConfig = {
@@ -121,30 +120,61 @@ with lib;
       };
 
       script = ''
-        printServerLatency() {
-          serverIP="$1"
-          regionID="$2"
-          regionName="$(echo ''${@:3} |
-            sed 's/ false//' | sed 's/true/(geo)/')"
+        echo Determining region...
+        serverlist='https://serverlist.piaservers.net/vpninfo/servers/v4'
+        
+        # Retry fetching server list with exponential backoff
+        allregions=""
+        for attempt in {1..5}; do
+          >&2 echo "Fetching server list (attempt $attempt/5)..."
+          allregions=$(curl -s -f -m 10 "$serverlist" 2>&1)
+          if [ $? -eq 0 ]; then
+            >&2 echo "Successfully fetched server list"
+            break
+          fi
+          >&2 echo "Failed to fetch server list: $allregions"
+          if [ $attempt -lt 5 ]; then
+            sleep $((2 ** $attempt))
+          fi
+        done
+        
+        if [ -z "$allregions" ]; then
+          >&2 echo "Could not fetch server list after 5 attempts"
+          exit 1
+        fi
+        
+        # Extract first line (contains all regions)
+        allregions=$(echo "$allregions" | head -1)
+        
+        # Extract servers: for each region, get the meta server IP and connection info
+        filtered="$(echo $allregions | jq -r '.regions[]
+                   ${optionalString cfg.portForward.enable "| select(.port_forward==true)"}
+                   | select(.servers.meta != null and (.servers.meta | length) > 0)
+                   | .servers.meta[0].ip as $ip | .id as $id | .name as $name | (.geo // false) as $geo
+                   | "\($ip) \($id) \($name) \($geo)"')"
+        
+        >&2 echo "Scanning $(echo "$filtered" | grep -c . || echo 0) servers for latency..."
+        
+        latencies=""
+        while IFS= read -r line; do
+          [ -z "$line" ] && continue
+          serverIP=$(echo "$line" | awk '{print $1}')
+          regionID=$(echo "$line" | awk '{print $2}')
+          regionName=$(echo "$line" | awk '{print $3, $4}')
+          
           time=$(LC_NUMERIC=en_US.utf8 curl -o /dev/null -s \
             --connect-timeout ${toString cfg.maxLatency} \
             --write-out "%{time_connect}" \
             http://$serverIP:443)
           if [ $? -eq 0 ]; then
             >&2 echo Got latency ''${time}s for region: $regionName
-            echo $time $regionID $serverIP
+            latencies="$latencies
+$time $regionID $serverIP"
           fi
-        }
-        export -f printServerLatency
-
-        echo Determining region...
-        serverlist='https://serverlist.piaservers.net/vpninfo/servers/v4'
-        allregions=$(curl -s "$serverlist" | head -1)
-        filtered="$(echo $allregions | jq -r '.regions[]
-                   ${optionalString cfg.portForward.enable "| select(.port_forward==true)"}
-                   | .servers.meta[0].ip+" "+.id+" "+.name+" "+(.geo|tostring)')"
-        best="$(echo "$filtered" | xargs -I{} bash -c 'printServerLatency {}' |
-                sort | head -1 | awk '{ print $2 }')"
+        done <<< "$filtered"
+        
+        best="$(echo "$latencies" | grep -v '^$' | sort | head -1 | awk '{ print $2 }')"
+        
         if [ -z "$best" ]; then
           >&2 echo "No region found with latency under ${toString cfg.maxLatency} s. Stopping."
           exit 1
@@ -191,52 +221,36 @@ with lib;
         gateway="$(echo "$json" | jq -r '.server_ip')"
         servervip="$(echo "$json" | jq -r '.server_vip')"
         peerip=$(echo "$json" | jq -r '.peer_ip')
-
-        mkdir -p /run/systemd/network/
-        touch /run/systemd/network/60-${cfg.interface}.{netdev,network}
-        chown root:systemd-network /run/systemd/network/60-${cfg.interface}.{netdev,network}
-        chmod 640 /run/systemd/network/60-${cfg.interface}.{netdev,network}
-
-        cat > /run/systemd/network/60-${cfg.interface}.netdev <<EOF
-        [NetDev]
-        Description = WireGuard PIA network device
-        Name = ${cfg.interface}
-        Kind = wireguard
-
-        [WireGuard]
-        PrivateKey = $privateKey
-
-        [WireGuardPeer]
-        PublicKey = $(echo "$json" | jq -r '.server_key')
-        AllowedIPs = 0.0.0.0/0, ::/0
-        Endpoint = ''${wg_ip}:$(echo "$json" | jq -r '.server_port')
-        PersistentKeepalive = 25
-        EOF
-
-        cat > /run/systemd/network/60-${cfg.interface}.network <<EOF
-        [Match]
-        Name = ${cfg.interface}
-
-        [Network]
-        Description = WireGuard PIA network interface
-        Address = ''${peerip}/32
-        DNS = 8.8.4.4
-        DNS = 8.8.8.8
-        IPForward = ipv4
-
-        [RoutingPolicyRule]
-        From = ''${peerip}
-        Table = 42
-        EOF
+        server_key=$(echo "$json" | jq -r '.server_key')
+        server_port=$(echo "$json" | jq -r '.server_port')
 
         echo Bringing up network interface ${cfg.interface}.
 
         ${cfg.preUp}
 
-        networkctl reload
-        networkctl up ${cfg.interface}
+        # Clean up any existing interface
+        ${pkgs.iproute2}/bin/ip link delete dev ${cfg.interface} 2>/dev/null || true
 
-        ${pkgs.systemd}/lib/systemd/systemd-networkd-wait-online -i ${cfg.interface}
+        # Create WireGuard interface directly
+        ${pkgs.iproute2}/bin/ip link add dev ${cfg.interface} type wireguard
+        
+        # Configure WireGuard private key
+        ${pkgs.wireguard-tools}/bin/wg set ${cfg.interface} \
+          private-key <(echo "$privateKey") \
+          listen-port 0
+        
+        # Add peer
+        ${pkgs.wireguard-tools}/bin/wg set ${cfg.interface} \
+          peer $server_key \
+          endpoint ''${wg_ip}:$server_port \
+          allowed-ips 0.0.0.0/0,::/0 \
+          persistent-keepalive 25
+        
+        # Assign IP address
+        ${pkgs.iproute2}/bin/ip addr add ''${peerip}/32 dev ${cfg.interface}
+        
+        # Bring up the interface
+        ${pkgs.iproute2}/bin/ip link set up dev ${cfg.interface}
 
         ${pkgs.iproute2}/bin/ip route add default dev ${cfg.interface} table 42
 
@@ -248,11 +262,8 @@ with lib;
 
         ${cfg.preDown}
 
-        rm /run/systemd/network/60-${cfg.interface}.{netdev,network} || true
-
-        echo Bringing down network interface ${cfg.interface}.
-        networkctl down ${cfg.interface}
-        networkctl reload
+        ${pkgs.iproute2}/bin/ip link set down dev ${cfg.interface} 2>/dev/null || true
+        ${pkgs.iproute2}/bin/ip link delete dev ${cfg.interface} 2>/dev/null || true
 
         ${cfg.postDown}
       '';

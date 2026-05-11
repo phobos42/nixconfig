@@ -40,6 +40,12 @@ in with lib; {
         will be substituted into the static configuration file using [envsubst](https://github.com/a8m/envsubst).
       '';
     };
+    dns = mkOption {
+      default = [ "1.1.1.1" "8.8.8.8" ];
+      type = types.listOf types.str;
+      example = [ "1.1.1.1" "8.8.8.8" ];
+      description = "List of DNS servers to use.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -47,6 +53,7 @@ in with lib; {
     networking = {
       firewall = { enable = false; };
       hostName = cfg.hostname;
+      nameservers = cfg.dns;
       networkmanager = {
         enable = true;
         ensureProfiles = {
