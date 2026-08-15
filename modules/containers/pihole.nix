@@ -6,7 +6,8 @@ in
   # Stop systemd-resolved from listening to port 53
   services.resolved = {
     enable = true;
-    extraConfig = "DNSStubListener=no";
+    # extraConfig = "DNSStubListener=no";
+    settings.Resolve.DNSStubListener = "no";
   };
   virtualisation.oci-containers.containers = {
     pihole = {
