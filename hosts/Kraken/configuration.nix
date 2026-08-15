@@ -72,7 +72,7 @@
   };
 
   nixpkgs.config.permittedInsecurePackages =
-    [ "dotnet-sdk-6.0.428" "aspnetcore-runtime-6.0.36" "python3.12-ecdsa-0.19.1" "nextcloud-31.0.14" "docker-28.5.2"];
+    [ "dotnet-sdk-6.0.428" "aspnetcore-runtime-6.0.36" "python3.12-ecdsa-0.19.1" "docker-28.5.2"];
 
   # hardware.nvidia = {
   #   # Modesetting is required.
