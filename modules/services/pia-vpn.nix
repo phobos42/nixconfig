@@ -37,6 +37,15 @@ with lib;
       '';
     };
 
+    blacklistedHosts = mkOption {
+      type = types.listOf types.str;
+      default = [ "Server-11540-3a" ];
+      description = ''
+        Hostnames to exclude when choosing a PIA server.
+        This can be used to avoid a misbehaving server while keeping the rest of the region list available.
+      '';
+    };
+
     maxLatency = mkOption {
       type = types.float;
       default = 0.5;
@@ -96,7 +105,7 @@ with lib;
 
     systemd.services.pia-vpn = {
       description = "Connect to Private Internet Access on ${cfg.interface}";
-      path = with pkgs; [ bash curl gawk jq wireguard-tools ];
+      path = with pkgs; [ bash curl gawk jq openssl wireguard-tools ];
       requires = [ "network-online.target" ];
       # after = [ "network.target" "network-online.target" ];
       after = [ "network.target" "network-online.target" "systemd-resolved.service" ];
@@ -122,6 +131,7 @@ with lib;
       script = ''
         echo Determining region...
         serverlist='https://serverlist.piaservers.net/vpninfo/servers/v4'
+        blacklistedHosts='${builtins.toJSON cfg.blacklistedHosts}'
         
         # Retry fetching server list with exponential backoff
         allregions=""
@@ -147,9 +157,13 @@ with lib;
         allregions=$(echo "$allregions" | head -1)
         
         # Extract servers: for each region, get the meta server IP and connection info
-        filtered="$(echo $allregions | jq -r '.regions[]
+        filtered="$(echo "$allregions" | jq -r --argjson blacklist "$blacklistedHosts" '
+                   .regions[]
                    ${optionalString cfg.portForward.enable "| select(.port_forward==true)"}
                    | select(.servers.meta != null and (.servers.meta | length) > 0)
+                   | select(.servers.meta[0].cn as $cn | ($blacklist | index($cn) | not))
+                   | select(.servers.wg != null and (.servers.wg | length) > 0)
+                   | select(.servers.wg[0].cn as $cn | ($blacklist | index($cn) | not))
                    | .servers.meta[0].ip as $ip | .id as $id | .name as $name | (.geo // false) as $geo
                    | "\($ip) \($id) \($name) \($geo)"')"
         
@@ -188,12 +202,38 @@ $time $regionID $serverIP"
         echo "$region" > $STATE_DIRECTORY/region.json
 
         echo Generating token...
-        tokenResponse="$(curl -s -u "$PIA_USER:$PIA_PASS" \
+        if [ ! -s "${cfg.certificateFile}" ]; then
+          >&2 echo "PIA TLS certificate file is missing or empty: ${cfg.certificateFile}"
+          exit 1
+        fi
+        if ! ${pkgs.openssl}/bin/openssl x509 -in "${cfg.certificateFile}" -noout >/dev/null 2>&1; then
+          >&2 echo "PIA TLS certificate is not a valid X.509 certificate: ${cfg.certificateFile}"
+          exit 1
+        fi
+        tokenResponse="$(curl -sS --show-error --connect-timeout 15 \
           --connect-to "$meta_hostname::$meta_ip" \
           --cacert "${cfg.certificateFile}" \
-          "https://$meta_hostname/authv3/generateToken")"
-        if [ "$(echo "$tokenResponse" | jq -r '.status')" != "OK" ]; then
-          >&2 echo "Failed to generate token. Stopping."
+          -u "$PIA_USER:$PIA_PASS" \
+          "https://$meta_hostname/authv3/generateToken" 2> "$STATE_DIRECTORY/token.err" || {
+            rc=$?
+            >&2 echo "TLS/auth token request failed (curl exit $rc)."
+            >&2 echo "Certificate file: ${cfg.certificateFile}"
+            >&2 echo "Target host: $meta_hostname ($meta_ip)"
+            >&2 echo "curl stderr:"
+            >&2 cat "$STATE_DIRECTORY/token.err"
+            exit 1
+          })"
+        if [ -z "$tokenResponse" ]; then
+          >&2 echo "PIA token endpoint returned empty output."
+          >&2 echo "curl stderr:"
+          >&2 cat "$STATE_DIRECTORY/token.err" 2>/dev/null || true
+          exit 1
+        fi
+        if [ "$(echo "$tokenResponse" | jq -r '.status' 2>/dev/null || echo 'null')" != "OK" ]; then
+          >&2 echo "Failed to generate token. Response was not OK."
+          >&2 echo "$tokenResponse"
+          >&2 echo "curl stderr:"
+          >&2 cat "$STATE_DIRECTORY/token.err" 2>/dev/null || true
           exit 1
         fi
         echo "$tokenResponse" > $STATE_DIRECTORY/token.json
@@ -202,16 +242,26 @@ $time $regionID $serverIP"
         echo Connecting to the PIA WireGuard API on $wg_ip...
         privateKey="$(wg genkey)"
         publicKey="$(echo "$privateKey" | wg pubkey)"
-        json="$(curl -s -G \
+        json="$(curl -sS --show-error --connect-timeout 15 -G \
           --connect-to "$wg_hostname::$wg_ip:" \
           --cacert "${cfg.certificateFile}" \
           --data-urlencode "pt=''${token}" \
           --data-urlencode "pubkey=$publicKey" \
-          "https://''${wg_hostname}:1337/addKey")"
-        status="$(echo "$json" | jq -r '.status')"
+          "https://''${wg_hostname}:1337/addKey" 2> "$STATE_DIRECTORY/wg.err" || {
+            rc=$?
+            >&2 echo "TLS/WireGuard API request failed (curl exit $rc)."
+            >&2 echo "Certificate file: ${cfg.certificateFile}"
+            >&2 echo "Target host: $wg_hostname ($wg_ip)"
+            >&2 echo "curl stderr:"
+            >&2 cat "$STATE_DIRECTORY/wg.err"
+            exit 1
+          })"
+        status="$(echo "$json" | jq -r '.status' 2>/dev/null || echo 'null')"
         if [ "$status" != "OK" ]; then
-          >&2 echo "Server did not return OK. Stopping."
+          >&2 echo "Server did not return OK for addKey."
           >&2 echo "$json"
+          >&2 echo "curl stderr:"
+          >&2 cat "$STATE_DIRECTORY/wg.err" 2>/dev/null || true
           exit 1
         fi
 

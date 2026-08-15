@@ -35,6 +35,10 @@
     options = "--delete-older-than 30d";
   };
 
+  nixpkgs.config.permittedInsecurePackages =
+    ["docker-28.5.2"];
+
+
   environment.systemPackages = with pkgs; [
     curl
     gitMinimal
