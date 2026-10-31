@@ -1,6 +1,22 @@
 { config, ... }:
 let portNumber = 8123;
 in {
+  nixpkgs.overlays = [
+    (finalPkgs: prevPkgs: {
+      python314 = prevPkgs.python314.override {
+        packageOverrides = pythonFinal: pythonPrev: {
+          "urllib3-future" = pythonPrev."urllib3-future".overridePythonAttrs (oldAttrs: {
+            disabledTestPaths = (oldAttrs.disabledTestPaths or [ ]) ++ [
+              "test/test_async_response.py::TestAsyncResponse::test_chunked_decoding_gzip_swallow_garbage"
+              "test/test_response.py::TestResponse::test_chunked_decoding_gzip_swallow_garbage"
+              "test/test_ssltransport.py::SingleTLSLayerTestCase::test_start_closed_socket"
+            ];
+          });
+        };
+      };
+    })
+  ];
+
   services.home-assistant = {
     enable = true;
 

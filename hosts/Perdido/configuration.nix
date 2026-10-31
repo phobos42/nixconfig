@@ -36,7 +36,7 @@
   };
 
   nixpkgs.config.permittedInsecurePackages =
-    ["docker-28.5.2"];
+    ["docker-28.5.2" "immich-2.7.5"];
 
 
   environment.systemPackages = with pkgs; [

@@ -18,5 +18,9 @@ test:
 update:
 	nix flake update
 
+apply:
+	 colmena build --on Kraken --impure
+
+
 upgrade:
 	make update && make switch
