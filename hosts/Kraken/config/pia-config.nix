@@ -17,6 +17,10 @@ in
         # '';
       };
       maxLatency = 0.5;
+      blacklistedHosts = [
+        "Server-11697-2a"
+      ];
+      region = "US East";
     };
   };
   sops.secrets = {

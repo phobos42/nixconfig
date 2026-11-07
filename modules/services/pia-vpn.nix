@@ -46,6 +46,15 @@ with lib;
       '';
     };
 
+    region = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = ''
+        Exact PIA region name to use, such as "US East". When unset, choose
+        the region with the lowest measured latency.
+      '';
+    };
+
     maxLatency = mkOption {
       type = types.float;
       default = 0.5;
@@ -157,8 +166,11 @@ with lib;
         allregions=$(echo "$allregions" | head -1)
         
         # Extract servers: for each region, get the meta server IP and connection info
-        filtered="$(echo "$allregions" | jq -r --argjson blacklist "$blacklistedHosts" '
+        filtered="$(echo "$allregions" | jq -r \
+             --argjson blacklist "$blacklistedHosts" \
+             --arg region ${escapeShellArg (if cfg.region == null then "" else cfg.region)} '
                    .regions[]
+             | select($region == "" or .name == $region)
                    ${optionalString cfg.portForward.enable "| select(.port_forward==true)"}
                    | select(.servers.meta != null and (.servers.meta | length) > 0)
                    | select(.servers.meta[0].cn as $cn | ($blacklist | index($cn) | not))
@@ -167,7 +179,8 @@ with lib;
                    | .servers.meta[0].ip as $ip | .id as $id | .name as $name | (.geo // false) as $geo
                    | "\($ip) \($id) \($name) \($geo)"')"
         
-        >&2 echo "Scanning $(echo "$filtered" | grep -c . || echo 0) servers for latency..."
+        regionLabel=${escapeShellArg (if cfg.region == null then "all regions" else cfg.region)}
+        >&2 echo "Scanning $(echo "$filtered" | grep -c . || echo 0) servers in region: $regionLabel"
         
         latencies=""
         while IFS= read -r line; do
@@ -195,10 +208,12 @@ $time $regionID $serverIP"
         fi
         region="$(echo $allregions |
                   jq --arg REGION_ID "$best" -r '.regions[] | select(.id==$REGION_ID)')"
+        regionName="$(echo "$region" | jq -r '.name')"
         meta_ip="$(echo $region | jq -r '.servers.meta[0].ip')"
         meta_hostname="$(echo $region | jq -r '.servers.meta[0].cn')"
         wg_ip="$(echo $region | jq -r '.servers.wg[0].ip')"
         wg_hostname="$(echo $region | jq -r '.servers.wg[0].cn')"
+        >&2 echo "Selected PIA region: $regionName ($best); meta $meta_hostname ($meta_ip); WireGuard $wg_hostname ($wg_ip)"
         echo "$region" > $STATE_DIRECTORY/region.json
 
         echo Generating token...
@@ -218,6 +233,7 @@ $time $regionID $serverIP"
             rc=$?
             >&2 echo "TLS/auth token request failed (curl exit $rc)."
             >&2 echo "Certificate file: ${cfg.certificateFile}"
+            >&2 echo "Region: $regionName ($best)"
             >&2 echo "Target host: $meta_hostname ($meta_ip)"
             >&2 echo "curl stderr:"
             >&2 cat "$STATE_DIRECTORY/token.err"

@@ -31,8 +31,27 @@ in
     autoUpdateApps.startAt = "05:00:00";
 
     settings = {
-      overwriteprotocol = "https";
-      trusted_domains = [ "nextcloud.tailnethome.garrettruffner.com" ];
+      # overwriteprotocol = "https";
+      # overwritehost = "nextcloud.garrettstuff.duckdns.org";
+      # overwrite.cli.url = "https://nextcloud.garrettstuff.duckdns.org";
+      # trusted_proxies = [ "100.74.249.16" ];
+      # overwritecond.address = "^100\\.74\\.249\\.16$";
+      # trusted_domains = [ "nextcloud.garrettstuff.duckdns.org" "nextcloud.tailnethome.garrettruffner.com" ];
+      "trusted_domains" = [
+        "nextcloud.garrettstuff.duckdns.org"
+        "nextcloud.tailnethome.garrettruffner.com"
+      ];
+
+      "trusted_proxies" = [
+        "172.234.30.101"
+        "100.74.249.16"
+      ];
+
+      "overwriteprotocol" = "https";
+      "overwritehost" = "nextcloud.tailnethome.garrettruffner.com";
+      "overwrite.cli.url" = "https://nextcloud.garrettstuff.duckdns.org";
+
+      "overwritecond.address" = "^172\\.234\\.30\\.101$";
     };
 
     config = {
@@ -55,6 +74,40 @@ in
         ;
     };
   };
+
+#   systemd.services.nextcloud = {
+#     serviceConfig = {
+#       EnvironmentFile = [ config.sops.secrets.urlconfig.path ];
+#     };
+#     preStart = ''
+#       install -d -m 0755 "${config.services.nextcloud.home}/config"
+#       cat > "${config.services.nextcloud.home}/config/override.config.php" <<'PHP'
+# <?php
+# $CONFIG['overwritehost'] = 'nextcloud.' . getenv('PUBLIC_DOMAIN1');
+# $CONFIG['overwrite.cli.url'] = 'https://nextcloud.' . getenv('PUBLIC_DOMAIN1');
+# $CONFIG['trusted_domains'] = array_values(array_unique(array_merge(
+#   $CONFIG['trusted_domains'] ?? [],
+#   [
+#     'nextcloud.tailnethome.garrettruffner.com',
+#     'nextcloud.' . getenv('PUBLIC_DOMAIN1'),
+#   ]
+# )));
+# PHP
+#     '';
+#   };
+
+  systemd.services."nextcloud-setup".serviceConfig = {
+    EnvironmentFile = [ config.sops.secrets.urlconfig.path ];
+  };
+
+  sops.secrets = {
+    urlconfig = {
+      sopsFile = ./urlconfig.env;
+      format = "dotenv";
+      restartUnits = [ "nextcloud.service" ];
+    };
+  };
+  
   services.postgresql = {
     enable = true;
     # Ensure the database, user, and permissions always exist

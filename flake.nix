@@ -5,6 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:nixos/nixos-hardware";
+    colmena.url = "github:nix-community/colmena";
     # nixinate = {
     #   url = "github:phobos42/nixinate";
     #   inputs.nixpkgs.follows = "nixpkgs";
@@ -26,7 +27,7 @@
 
   outputs = { self,
     # nixinate,
-    home-manager, nixpkgs, nixpkgs-unstable, nixos-hardware, utils, sops-nix
+    colmena, home-manager, nixpkgs, nixpkgs-unstable, nixos-hardware, utils, sops-nix
     , disko, ... }@inputs:
     let
       pkgs-unstable = import nixpkgs-unstable {
@@ -88,28 +89,29 @@
         #   };
         # };
       };
+      
+      colmenaHive = colmena.lib.makeHive self.outputs.colmena;
 
-      colmena = let configs = self.nixosConfigurations;
-      in {
-        meta = {
-          nixpkgs = import nixpkgs {
-            system = "x86_64-linux";
+      colmena =let configs = self.nixosConfigurations; in {                            
+            meta = {
+              nixpkgs = import nixpkgs {
+                system = "x86_64-linux";
+              };
+              specialArgs = { inherit inputs; };
+              nodeNixpkgs = builtins.mapAttrs (name: value: value.pkgs) configs;
+              nodeSpecialArgs =
+                builtins.mapAttrs (name: value: value._module.specialArgs) configs;
+            };
+        } // builtins.mapAttrs (name: value: {
+          deployment = {
+            targetHost = targetHosts.${name}.hostname or (throw
+              "No target Host defined for ${name}");
+            targetUser = targetHosts.${name}.deploymentUser or "deploy";
+            buildOnTarget = true;
+            tags = targetHosts.${name}.tags or [ ];
+            allowLocalDeployment = false;
           };
-          specialArgs = { inherit inputs; };
-          nodeNixpkgs = builtins.mapAttrs (name: value: value.pkgs) configs;
-          nodeSpecialArgs =
-            builtins.mapAttrs (name: value: value._module.specialArgs) configs;
-        };
-      } // builtins.mapAttrs (name: value: {
-        deployment = {
-          targetHost = targetHosts.${name}.hostname or (throw
-            "No target Host defined for ${name}");
-          targetUser = targetHosts.${name}.deploymentUser or "deploy";
-          buildOnTarget = true;
-          tags = targetHosts.${name}.tags or [ ];
-          allowLocalDeployment = false;
-        };
-        imports = value._module.args.modules;
-      }) configs;
-    };
+          imports = value._module.args.modules;
+        }) configs;
+      };
 }
