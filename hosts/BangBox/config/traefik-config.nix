@@ -1,14 +1,12 @@
 { config, inputs, ... }:
 {
-  imports = with inputs.self.nixosModules; [ services-traefik ];
+  imports = with inputs.self.nixosModules; [ services-traefik services-cloudflared ];
   services = {
     traefik-wrapper = {
       enable = true;
-      base-domain = "garrettruffner.com";
-      domain-subnets = [
-        "home2"
-        "tailnethome2"
-      ];
     };
+  };
+  services.cloudflared-wrapper = {
+    enable = false;
   };
 }

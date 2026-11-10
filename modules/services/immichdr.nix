@@ -51,9 +51,10 @@ in
   };
   services.traefik-wrapper.service-definitions = builtins.listToAttrs [
     {
-      name = "immich";
+      name = "immichowl";
       value = {
         url = "http://localhost:${toString portNumber}";
+        public = true;
       };
     }
   ];

@@ -7,7 +7,7 @@ in
   services.nginx = {
     enable = true;
     virtualHosts = {
-      "nextcloud.home.garrettruffner.com" = {
+      "localhost" = {
         listen = [
           {
             addr = "127.0.0.1";
@@ -22,7 +22,7 @@ in
   services.nextcloud = {
     enable = true;
     package = pkgs.nextcloud34;
-    hostName = "nextcloud.home.garrettruffner.com";
+    hostName = "localhost";
     home = "/tank/shack/cloud/nextcloud/nextcloudconfig";
     datadir = "/tank/shack/cloud/nextcloud/nextcloudstorage";
 
@@ -31,27 +31,15 @@ in
     autoUpdateApps.startAt = "05:00:00";
 
     settings = {
-      # overwriteprotocol = "https";
-      # overwritehost = "nextcloud.garrettstuff.duckdns.org";
-      # overwrite.cli.url = "https://nextcloud.garrettstuff.duckdns.org";
-      # trusted_proxies = [ "100.74.249.16" ];
-      # overwritecond.address = "^100\\.74\\.249\\.16$";
-      # trusted_domains = [ "nextcloud.garrettstuff.duckdns.org" "nextcloud.tailnethome.garrettruffner.com" ];
       "trusted_domains" = [
-        "nextcloud.garrettstuff.duckdns.org"
-        "nextcloud.tailnethome.garrettruffner.com"
+        "localhost"
       ];
 
-      "trusted_proxies" = [
-        "172.234.30.101"
-        "100.74.249.16"
-      ];
+      "trusted_proxies" = [ "127.0.0.1" ];
 
       "overwriteprotocol" = "https";
-      "overwritehost" = "nextcloud.tailnethome.garrettruffner.com";
-      "overwrite.cli.url" = "https://nextcloud.garrettstuff.duckdns.org";
-
-      "overwritecond.address" = "^172\\.234\\.30\\.101$";
+      "overwritehost" = "localhost";
+      "overwrite.cli.url" = "http://localhost";
     };
 
     config = {
@@ -124,11 +112,21 @@ in
     requires = [ "postgresql.service" ];
     after = [ "postgresql.service" ];
   };
+  systemd.services.nextcloud = {
+    serviceConfig.EnvironmentFile = config.sops.templates."base-domain.env".path;
+    preStart = lib.mkAfter ''
+      ${config.services.nextcloud.occ}/bin/nextcloud-occ config:system:set trusted_domains 0 --value="nextcloud.''${BASE_DOMAIN}"
+      ${config.services.nextcloud.occ}/bin/nextcloud-occ config:system:set overwritehost --value="nextcloud.''${BASE_DOMAIN}"
+      ${config.services.nextcloud.occ}/bin/nextcloud-occ config:system:set overwriteprotocol --value=https
+      ${config.services.nextcloud.occ}/bin/nextcloud-occ config:system:set overwrite.cli.url --value="https://nextcloud.''${BASE_DOMAIN}"
+    '';
+  };
   services.traefik-wrapper.service-definitions = builtins.listToAttrs [
     {
       name = "nextcloud";
       value = {
         url = "http://127.0.0.1:${toString portNumber}";
+        public = true;
       };
     }
   ];

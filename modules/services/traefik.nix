@@ -1,77 +1,91 @@
-{ config, lib, pkgs, pkgs-unstable, ... }:
+{ config, lib, pkgs-unstable, ... }:
 let
   cfg = config.services.traefik-wrapper;
-  active-domains = builtins.map (name:
-    ''
-      { main="${name}.${cfg.base-domain}";sans="*.${name}.${cfg.base-domain}";}'')
-    cfg.domain-subnets;
-
-  apivalue = builtins.listToAttrs [{
-    name = "api";
+  baseDomain = config.sops.placeholder.base_domain;
+  hostName = lib.strings.toLower config.networking.hostName;
+  tailscaleServiceValues = builtins.mapAttrs (_name: value: {
+    rule = "Host(`${value.hostname}.${baseDomain}`)";
+    entryPoints = [ "websecure" ];
+    service = _name;
+    middlewares = [ "tailscale-only" ];
+    tls.certResolver = "letsencrypt";
+  }) cfg.service-definitions;
+  tailscaleRedirectValues = builtins.listToAttrs (builtins.map (name: {
+    name = "${name}-redirect";
     value = {
-      rule = lib.strings.concatStringsSep " || "
-        (builtins.map (subdomain: "Host(`${subdomain}.${cfg.base-domain}`)")
-          cfg.domain-subnets);
+      rule = "Host(`${cfg.service-definitions.${name}.hostname}.${baseDomain}`)";
+      entryPoints = [ "web" ];
+      service = name;
+      middlewares = [ "tailscale-only" "redirect-to-https" ];
+    };
+  }) (builtins.attrNames cfg.service-definitions));
+  publicServiceNames = builtins.filter
+    (name: cfg.service-definitions.${name}.public)
+    (builtins.attrNames cfg.service-definitions);
+  publicServiceValues = builtins.listToAttrs (builtins.map (name: {
+    name = "${name}-public";
+    value = {
+      rule = "Host(`${cfg.service-definitions.${name}.hostname}.${baseDomain}`)";
+      entryPoints = [ "tunnel" ];
+      service = name;
+    };
+  }) publicServiceNames);
+  apiValue = {
+    "api-${hostName}" = {
+      rule = "Host(`traefik-${hostName}.${baseDomain}`)";
       service = "api@internal";
       entryPoints = [ "websecure" ];
-      tls = {
-        certResolver = "letsencrypt";
-        domains = active-domains;
-      };
+      middlewares = [ "tailscale-only" ];
+      tls.certResolver = "letsencrypt";
     };
-  }];
-  secureServiceValues = builtins.listToAttrs (builtins.map (nameVal: {
-    name = "${nameVal}";
-    value = {
-      rule = lib.strings.concatStringsSep " || " (builtins.map
-        (subdomain: "Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)")
-        cfg.domain-subnets);
-      # rule = "HostRegexp(`${nameVal}\.([A-Za-z0-9]+)\.${cfg.base-domain}`)";
-      entryPoints = [ "websecure" ];
-      service = "${nameVal}";
-      tls = {
-        certResolver = "letsencrypt";
-        domains = active-domains;
-      };
-    };
-  }) (builtins.attrNames cfg.service-definitions));
-  insecureServiceValues = builtins.listToAttrs (builtins.map (nameVal: {
-    name = "${nameVal}-insecure";
-    value = {
-      rule = lib.strings.concatStringsSep " || " (builtins.map
-        (subdomain: "Host(`${nameVal}.${subdomain}.${cfg.base-domain}`)")
-        cfg.domain-subnets);
-      entryPoints = [ "web" ];
-      service = "${nameVal}";
-      middlewares = "redirect-to-https";
-    };
-  }) (builtins.attrNames cfg.service-definitions));
+  };
 
   serviceMapping = builtins.mapAttrs
     (name: value: { loadBalancer = { servers = [{ url = value.url; }]; }; })
     cfg.service-definitions;
+  dynamicConfig = {
+    http = {
+      middlewares = {
+        redirect-to-https.redirectscheme = {
+          scheme = "https";
+          permanent = true;
+        };
+        tailscale-only.ipAllowList.sourceRange = [ "100.64.0.0/10" ];
+      };
+      services = serviceMapping;
+      routers = tailscaleServiceValues // tailscaleRedirectValues // publicServiceValues // apiValue;
+    };
+  };
 
 in with lib; {
   options.services.traefik-wrapper = {
     enable = mkEnableOption "Traefik Config Wrapper";
-    base-domain = mkOption {
-      type = types.str;
-      description = "base domain in the format: XXXX.com";
-    };
-    domain-subnets = mkOption {
-      type = types.listOf types.str;
-      description = ''
-        List of subnets which will prefix the base domain.
-      '';
-    };
     service-definitions = mkOption {
-      type = types.attrs;
+      type = types.attrsOf (types.submodule ({ name, ... }: {
+        options = {
+          hostname = mkOption {
+            type = types.str;
+            default = name;
+            description = "DNS label for this service on the configured base domain.";
+          };
+          url = mkOption {
+            type = types.str;
+            description = "Backend URL for the service.";
+          };
+          public = mkOption {
+            type = types.bool;
+            default = false;
+            description = "Publish the service through the local Cloudflare Tunnel ingress.";
+          };
+        };
+      }));
       description = ''
-        Configuration for Service names and url's for services. Provided name will be set as the prefix for the entire subnet.
+        Backend and exposure configuration keyed by service hostname.
         {
           name = "pihole";
           value = {
             url = "http://127.0.0.1:1398";
+            public = true;
           };
         }
       '';
@@ -91,6 +105,36 @@ in with lib; {
 
   config = mkIf cfg.enable {
 
+    sops.secrets.base_domain = {
+      sopsFile = ../../hosts/common.yaml;
+      format = "yaml";
+      key = "base_domain";
+      restartUnits = [ "traefik.service" ];
+    };
+    sops.secrets.cloudflare-dns-api-token = {
+      sopsFile = ../../hosts/common.yaml;
+      format = "yaml";
+      key = "CLOUDFLARE_DNS_API_TOKEN";
+      restartUnits = [ "traefik.service" ];
+    };
+    sops.templates."base-domain.env".content = ''
+      BASE_DOMAIN=${config.sops.placeholder.base_domain}
+    '';
+    sops.templates."traefik-cloudflare.env" = {
+      content = ''
+        CLOUDFLARE_DNS_API_TOKEN=${config.sops.placeholder.cloudflare-dns-api-token}
+      '';
+      owner = "traefik";
+      group = "keys";
+      mode = "0440";
+    };
+    sops.templates."traefik-dynamic.yaml" = {
+      content = builtins.toJSON dynamicConfig;
+      owner = "traefik";
+      group = "keys";
+      mode = "0440";
+    };
+
     sops.secrets.traefik = {
       sopsFile = ./traefikKey.env;
       format = "dotenv";
@@ -102,30 +146,17 @@ in with lib; {
       allowedUDPPorts = cfg.udp-ports;
     };
 
-    systemd.services.traefik = {
-      serviceConfig = {
-        EnvironmentFile = "${config.sops.secrets.traefik.path}";
-      };
-    };
+    users.users.traefik.extraGroups = [ "keys" ];
 
     services.traefik = {
       package = pkgs-unstable.traefik;
       enable = true;
-      environmentFiles = [ "${config.sops.secrets.traefik.path}" ];
+      environmentFiles = [
+        "${config.sops.secrets.traefik.path}"
+        config.sops.templates."traefik-cloudflare.env".path
+      ];
 
-      dynamicConfigOptions = {
-        http.middlewares = {
-          redirect-to-https.redirectscheme = {
-            scheme = "https";
-            permanent = true;
-          };
-        };
-        http = {
-          services = serviceMapping;
-          routers =
-            lib.mkMerge [ secureServiceValues insecureServiceValues apivalue ];
-        };
-      };
+      dynamicConfigFile = config.sops.templates."traefik-dynamic.yaml".path;
 
       staticConfigOptions = {
         global = {
@@ -144,6 +175,7 @@ in with lib; {
         entryPoints = {
           websecure = { address = ":443"; };
           web = { address = ":80"; };
+          tunnel = { address = "127.0.0.1:8080"; };
         };
 
         certificatesResolvers = {
@@ -151,7 +183,7 @@ in with lib; {
             email = "garrettruffner42@gmail.com";
             storage = "${config.services.traefik.dataDir}/acme.json";
             dnsChallenge = {
-              provider = "route53";
+              provider = "cloudflare";
               delayBeforeCheck = 60;
               resolvers = [ "1.1.1.1:53" ];
             };
