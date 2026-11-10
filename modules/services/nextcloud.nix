@@ -95,6 +95,24 @@ in
       restartUnits = [ "nextcloud.service" ];
     };
   };
+  sops.templates."nextcloud-public-domain.config.php" = {
+    path = "${config.services.nextcloud.datadir}/config/zz-domain.config.php";
+    content = ''
+      <?php
+      $publicHost = 'nextcloud.${config.sops.placeholder.base_domain}';
+      $CONFIG['trusted_domains'] = array_values(array_unique(array_merge(
+          $CONFIG['trusted_domains'] ?? [],
+          [$publicHost]
+      )));
+      $CONFIG['overwritehost'] = $publicHost;
+      $CONFIG['overwriteprotocol'] = 'https';
+      $CONFIG['overwrite.cli.url'] = 'https://' . $publicHost;
+    '';
+    owner = "nextcloud";
+    group = "nextcloud";
+    mode = "0440";
+    restartUnits = [ "phpfpm-nextcloud.service" ];
+  };
   
   services.postgresql = {
     enable = true;
@@ -111,15 +129,6 @@ in
   systemd.services."nextcloud-setup" = {
     requires = [ "postgresql.service" ];
     after = [ "postgresql.service" ];
-  };
-  systemd.services.nextcloud = {
-    serviceConfig.EnvironmentFile = config.sops.templates."base-domain.env".path;
-    preStart = lib.mkAfter ''
-      ${config.services.nextcloud.occ}/bin/nextcloud-occ config:system:set trusted_domains 0 --value="nextcloud.''${BASE_DOMAIN}"
-      ${config.services.nextcloud.occ}/bin/nextcloud-occ config:system:set overwritehost --value="nextcloud.''${BASE_DOMAIN}"
-      ${config.services.nextcloud.occ}/bin/nextcloud-occ config:system:set overwriteprotocol --value=https
-      ${config.services.nextcloud.occ}/bin/nextcloud-occ config:system:set overwrite.cli.url --value="https://nextcloud.''${BASE_DOMAIN}"
-    '';
   };
   services.traefik-wrapper.service-definitions = builtins.listToAttrs [
     {
