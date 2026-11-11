@@ -6,8 +6,10 @@ in
   # grafana configuration
   services.grafana = {
     enable = true;
-    port = portNumber;
-    addr = "127.0.0.1";
+    settings.server = {
+      http_port = portNumber;
+      http_addr = "127.0.0.1";
+    };
     settings.security.secret_key = "$__file{${config.sops.secrets.grafana.path}}";
     provision = {
       enable = true;
