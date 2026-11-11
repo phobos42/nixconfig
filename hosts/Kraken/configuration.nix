@@ -44,6 +44,8 @@
     ./config/zrepl-config.nix
   ];
 
+  services.tlp.settings.USB_DENYLIST = "1a86:55d4";
+
   # _module.args = {
   #   nixinate = {
   #     host = "192.168.1.101";
