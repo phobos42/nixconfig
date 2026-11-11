@@ -63,27 +63,6 @@ in
     };
   };
 
-#   systemd.services.nextcloud = {
-#     serviceConfig = {
-#       EnvironmentFile = [ config.sops.secrets.urlconfig.path ];
-#     };
-#     preStart = ''
-#       install -d -m 0755 "${config.services.nextcloud.home}/config"
-#       cat > "${config.services.nextcloud.home}/config/override.config.php" <<'PHP'
-# <?php
-# $CONFIG['overwritehost'] = 'nextcloud.' . getenv('PUBLIC_DOMAIN1');
-# $CONFIG['overwrite.cli.url'] = 'https://nextcloud.' . getenv('PUBLIC_DOMAIN1');
-# $CONFIG['trusted_domains'] = array_values(array_unique(array_merge(
-#   $CONFIG['trusted_domains'] ?? [],
-#   [
-#     'nextcloud.tailnethome.garrettruffner.com',
-#     'nextcloud.' . getenv('PUBLIC_DOMAIN1'),
-#   ]
-# )));
-# PHP
-#     '';
-#   };
-
   systemd.services."nextcloud-setup".serviceConfig = {
     EnvironmentFile = [ config.sops.secrets.urlconfig.path ];
   };
