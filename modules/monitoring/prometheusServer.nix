@@ -10,11 +10,48 @@ in
     enable = true;
     port = portNumber;
     globalConfig.scrape_interval = "10s";
+    globalConfig.evaluation_interval = "10s";
+    checkConfig = "syntax-only";
     scrapeConfigs = [
       {
         job_name = "node";
         static_configs = [
-          { targets = [ "localhost:${toString config.services.prometheus.exporters.node.port}" ]; }
+          {
+            targets = [ "127.0.0.1:${toString config.services.prometheus.exporters.node.port}" ];
+            labels.host = config.networking.hostName;
+          }
+        ];
+      }
+      {
+        job_name = "prometheus";
+        static_configs = [
+          {
+            targets = [ "127.0.0.1:${toString portNumber}" ];
+            labels.host = config.networking.hostName;
+          }
+        ];
+      }
+      {
+        job_name = "homeassistant";
+        metrics_path = "/api/prometheus";
+        authorization = {
+          type = "Bearer";
+          credentials_file = config.sops.secrets.homeassistantPrometheusToken.path;
+        };
+        static_configs = [
+          {
+            targets = [ "127.0.0.1:${toString config.services.home-assistant.config.http.server_port}" ];
+            labels.host = config.networking.hostName;
+          }
+        ];
+      }
+      {
+        job_name = "smartctl";
+        static_configs = [
+          {
+            targets = [ "127.0.0.1:${toString config.services.prometheus.exporters.smartctl.port}" ];
+            labels.host = config.networking.hostName;
+          }
         ];
       }
     ];

@@ -89,6 +89,11 @@ in {
       script = "!include scripts.yaml";
       scene= "!include scenes.yaml";
 
+      prometheus = {
+        namespace = "homeassistant";
+        requires_auth = true;
+      };
+
       http = {
         # server_host = "::1";
         trusted_proxies = [ "192.168.1.0/24" ];

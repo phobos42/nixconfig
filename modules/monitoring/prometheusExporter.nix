@@ -6,7 +6,12 @@
     port = 9000;
     # https://github.com/NixOS/nixpkgs/blob/nixos-24.05/nixos/modules/services/monitoring/prometheus/exporters.nix
     enabledCollectors = [
+      "cpufreq"
+      "hwmon"
+      "pressure"
+      "processes"
       "systemd"
+      "thermal_zone"
       "zfs"
     ];
     # /nix/store/zgsw0yx18v10xa58psanfabmg95nl2bb-node_exporter-1.8.1/bin/node_exporter  --help
@@ -15,6 +20,17 @@
       "--collector.softirqs"
       "--collector.tcpstat"
       "--collector.wifi"
+    ];
+  };
+
+  services.prometheus.exporters.smartctl = {
+    enable = true;
+    port = 9633;
+    devices = [
+      "/dev/sda"
+      "/dev/sdb"
+      "/dev/sdc"
+      "/dev/nvme0n1"
     ];
   };
 }
