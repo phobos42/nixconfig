@@ -112,6 +112,7 @@ in {
       name = "homeassistant";
       value = {
         url = "http://192.168.1.101:${toString portNumber}";
+        public = true;
       };
     }
   ];

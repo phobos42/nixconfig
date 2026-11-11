@@ -11,6 +11,7 @@ in
       name = "jellyfin";
       value = {
         url = "http://127.0.0.1:${toString portNumber}";
+        public = true;
       };
     }
   ];

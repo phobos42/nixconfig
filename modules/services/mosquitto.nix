@@ -5,7 +5,6 @@ in {
   services.mosquitto = {
     enable = true;
     listeners = [{
-      address = "mqtt.home.garrettruffner.com";
       port = portNumber;
       users.root = {
         acl = [ "readwrite #" ];
@@ -21,8 +20,4 @@ in {
     }];
   };
 
-  services.traefik-wrapper.service-definitions = builtins.listToAttrs [{
-    name = "mqtt";
-    value = { url = "http://127.0.0.1:${toString portNumber}"; };
-  }];
 }

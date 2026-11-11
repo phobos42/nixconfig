@@ -32,6 +32,7 @@ in
     {
       name = "scrutiny";
       value = {
+        hostname = "scrutiny-perdido";
         url = "http://127.0.0.1:${toString portNumber}";
       };
     }

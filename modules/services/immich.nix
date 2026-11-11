@@ -54,6 +54,7 @@ in
       name = "immich";
       value = {
         url = "http://localhost:${toString portNumber}";
+        public = true;
       };
     }
   ];

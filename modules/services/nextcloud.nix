@@ -7,7 +7,7 @@ in
   services.nginx = {
     enable = true;
     virtualHosts = {
-      "nextcloud.home.garrettruffner.com" = {
+      "localhost" = {
         listen = [
           {
             addr = "127.0.0.1";
@@ -22,7 +22,7 @@ in
   services.nextcloud = {
     enable = true;
     package = pkgs.nextcloud34;
-    hostName = "nextcloud.home.garrettruffner.com";
+    hostName = "localhost";
     home = "/tank/shack/cloud/nextcloud/nextcloudconfig";
     datadir = "/tank/shack/cloud/nextcloud/nextcloudstorage";
 
@@ -31,27 +31,15 @@ in
     autoUpdateApps.startAt = "05:00:00";
 
     settings = {
-      # overwriteprotocol = "https";
-      # overwritehost = "nextcloud.garrettstuff.duckdns.org";
-      # overwrite.cli.url = "https://nextcloud.garrettstuff.duckdns.org";
-      # trusted_proxies = [ "100.74.249.16" ];
-      # overwritecond.address = "^100\\.74\\.249\\.16$";
-      # trusted_domains = [ "nextcloud.garrettstuff.duckdns.org" "nextcloud.tailnethome.garrettruffner.com" ];
       "trusted_domains" = [
-        "nextcloud.garrettstuff.duckdns.org"
-        "nextcloud.tailnethome.garrettruffner.com"
+        "localhost"
       ];
 
-      "trusted_proxies" = [
-        "172.234.30.101"
-        "100.74.249.16"
-      ];
+      "trusted_proxies" = [ "127.0.0.1" ];
 
       "overwriteprotocol" = "https";
-      "overwritehost" = "nextcloud.tailnethome.garrettruffner.com";
-      "overwrite.cli.url" = "https://nextcloud.garrettstuff.duckdns.org";
-
-      "overwritecond.address" = "^172\\.234\\.30\\.101$";
+      "overwritehost" = "localhost";
+      "overwrite.cli.url" = "http://localhost";
     };
 
     config = {
@@ -107,6 +95,24 @@ in
       restartUnits = [ "nextcloud.service" ];
     };
   };
+  sops.templates."nextcloud-public-domain.config.php" = {
+    path = "${config.services.nextcloud.datadir}/config/zz-domain.config.php";
+    content = ''
+      <?php
+      $publicHost = 'nextcloud.${config.sops.placeholder.base_domain}';
+      $CONFIG['trusted_domains'] = array_values(array_unique(array_merge(
+          $CONFIG['trusted_domains'] ?? [],
+          [$publicHost]
+      )));
+      $CONFIG['overwritehost'] = $publicHost;
+      $CONFIG['overwriteprotocol'] = 'https';
+      $CONFIG['overwrite.cli.url'] = 'https://' . $publicHost;
+    '';
+    owner = "nextcloud";
+    group = "nextcloud";
+    mode = "0440";
+    restartUnits = [ "phpfpm-nextcloud.service" ];
+  };
   
   services.postgresql = {
     enable = true;
@@ -129,6 +135,7 @@ in
       name = "nextcloud";
       value = {
         url = "http://127.0.0.1:${toString portNumber}";
+        public = true;
       };
     }
   ];

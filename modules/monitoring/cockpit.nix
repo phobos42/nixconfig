@@ -1,19 +1,30 @@
-{ pkgs-unstable, config, ... }:
+{ pkgs-unstable, config, lib, ... }:
 let
   portNumber = 9090;
-  cfg = config.services.traefik-wrapper;
+  serviceHostname = "cockpit-${lib.strings.toLower config.networking.hostName}";
 in {
   services.cockpit = {
     package = pkgs-unstable.cockpit;
     enable = true;
     port = portNumber;
-    allowed-origins = 
-      builtins.map (subdomain:
-        ''https://cockpit.${subdomain}.${cfg.base-domain}'')
-        cfg.domain-subnets;
+  };
+  sops.templates."cockpit/cockpit.conf" = {
+    content = ''
+      [WebService]
+      Origins = https://${serviceHostname}.${config.sops.placeholder.base_domain}
+      LoginTo = false
+    '';
+    mode = "0444";
+  };
+  systemd.services = {
+    "cockpit-wsinstance-http".environment.XDG_CONFIG_DIRS = "/run/secrets/rendered";
+    "cockpit-wsinstance-https@".environment.XDG_CONFIG_DIRS = "/run/secrets/rendered";
   };
   services.traefik-wrapper.service-definitions = builtins.listToAttrs [{
     name = "cockpit";
-    value = { url = "http://127.0.0.1:${toString portNumber}"; };
+    value = {
+      hostname = serviceHostname;
+      url = "http://127.0.0.1:${toString portNumber}";
+    };
   }];
 }
